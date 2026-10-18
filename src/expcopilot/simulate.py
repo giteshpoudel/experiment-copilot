@@ -383,12 +383,17 @@ def smoke_suite() -> list[SimulationSpec]:
     """20 experiments that together exercise every simulator knob at least once.
 
     Names and descriptions are deliberately neutral: they are what the agent sees.
+    Planned sizes give 80% power at the MDE (alpha 0.05 two-sided, no CUPED, two arms),
+    rounded up to the next 1,000; `test_planned_n_matches_power` recomputes them from a pilot.
     """
-    revenue_plan = _plan("revenue", mde=0.15, planned_n_total=37_000)
+
+    def revenue_plan(n: int) -> PreRegisteredPlan:
+        return _plan("revenue", mde=0.15, planned_n_total=n)
+
     rps_plan = _plan(
         "revenue_per_session",
         mde=0.15,
-        planned_n_total=40_000,
+        planned_n_total=34_000,
         secondary_metrics=["conversion", "sessions"],
     )
     return [
@@ -432,16 +437,16 @@ def smoke_suite() -> list[SimulationSpec]:
             "recommendation-carousel",
             "Product recommendations on the cart page.",
             ["metric:continuous", "effect:null"],
-            n_total=37_000,
-            plan=revenue_plan,
+            n_total=34_000,
+            plan=revenue_plan(34_000),
         ),
         _spec(
             7,
             "bundle-discounts",
             "Discount when buying two related items.",
             ["metric:continuous", "effect:large"],
-            n_total=37_000,
-            plan=revenue_plan,
+            n_total=34_000,
+            plan=revenue_plan(34_000),
             effects=_effects(revenue=0.40),
         ),
         _spec(
@@ -449,7 +454,7 @@ def smoke_suite() -> list[SimulationSpec]:
             "search-ranking-v2",
             "New ranking model for site search.",
             ["metric:ratio", "effect:null"],
-            n_total=40_000,
+            n_total=34_000,
             plan=rps_plan,
         ),
         _spec(
@@ -457,7 +462,7 @@ def smoke_suite() -> list[SimulationSpec]:
             "premium-upsell",
             "Upsell premium versions on product pages.",
             ["metric:ratio", "effect:at_mde"],
-            n_total=40_000,
+            n_total=34_000,
             plan=rps_plan,
             effects=_effects(revenue=0.15),
         ),
@@ -466,7 +471,7 @@ def smoke_suite() -> list[SimulationSpec]:
             "infinite-scroll",
             "Infinite scroll on category pages.",
             ["metric:ratio", "effect:ratio_denominator_drop", "metric_conflict"],
-            n_total=40_000,
+            n_total=34_000,
             plan=rps_plan,
             effects=_effects(conversion=-0.10, sessions=-0.12),
         ),
@@ -475,8 +480,8 @@ def smoke_suite() -> list[SimulationSpec]:
             "loyalty-points-a",
             "Show loyalty points balance in the header.",
             ["metric:continuous", "effect:at_mde", "cuped:rho_0.0"],
-            n_total=37_000,
-            plan=revenue_plan,
+            n_total=36_000,
+            plan=revenue_plan(36_000),
             covariate_rho=0.0,
             effects=_effects(revenue=0.15),
         ),
@@ -485,8 +490,8 @@ def smoke_suite() -> list[SimulationSpec]:
             "loyalty-points-b",
             "Show loyalty points balance on product pages.",
             ["metric:continuous", "effect:at_mde", "cuped:rho_0.5"],
-            n_total=37_000,
-            plan=revenue_plan,
+            n_total=34_000,
+            plan=revenue_plan(34_000),
             covariate_rho=0.5,
             effects=_effects(revenue=0.15),
         ),
@@ -495,8 +500,8 @@ def smoke_suite() -> list[SimulationSpec]:
             "loyalty-points-c",
             "Show loyalty points balance at checkout.",
             ["metric:continuous", "effect:at_mde", "cuped:rho_0.9"],
-            n_total=37_000,
-            plan=revenue_plan,
+            n_total=22_000,
+            plan=revenue_plan(22_000),
             covariate_rho=0.9,
             effects=_effects(revenue=0.15),
         ),

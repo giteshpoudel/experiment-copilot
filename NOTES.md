@@ -58,3 +58,71 @@ Running log for the README's "what the evals caught" section. Newest last.
 - `planned_n_total` values in the smoke suite are hand-computed approximations to 80% power.
   Recompute them with `stats.power` in Phase 2, especially for the revenue plans, whose variance
   depends on rho.
+
+## Phase 2: statistics engine, validated (2026-10-18)
+
+### Decisions
+
+- **Engine returns frozen dataclasses** (`EffectEstimate`, `SRMResult`, `SequentialResult`,
+  ...). The Phase 3 server wraps them in Pydantic `ToolResult`s with result ids. This keeps
+  `stats/` free of I/O and fast inside validation loops.
+- **Two-proportion z-test uses the unpooled (Wald) se for both the p-value and the CI**, so
+  "CI excludes zero" and "p < alpha" always agree. The decision rule is written in terms of
+  the CI. The pooled-se z-test can disagree with its own Wald CI near the boundary.
+- **CUPED theta is the pooled within-arm slope.** The adjusted difference then equals the OLS
+  ANCOVA treatment coefficient exactly (tested to 1e-10); the se agrees with HC2 to about 1%.
+- **Relative CIs use the delta method** on the ratio of independent arm means.
+- **Group sequential uses two-sided Lan-DeMets O'Brien-Fleming spending**, with boundaries from
+  a numerical recursion on a 1,201-point Simpson grid. Any look schedule works.
+- **mSPRT's tau is the plan's absolute MDE.**
+- **Uplift (T-/X-learners, Qini) moves to Phase 6** with Criteo. Phase 2 has segment effects
+  with Holm/BH adjustment plus Cochran's Q for heterogeneity.
+- **Validation pass bands are the target ± 3 binomial SEs** for the reps run (±1.46 pp at
+  2,000 reps), so they widen automatically for quick runs.
+- **Peeking validation uses the planned information fractions** k/14 (uniform enrolment) so
+  the boundaries are computed once. The Phase 3 tool will use the realized fractions.
+
+### Bugs caught
+
+- **Wrong two-sided spending function** (caught by the published-values test). I first used
+  the one-sided OBF form 2 − 2Φ(z_{α/2}/√t) with the total α. It also spends exactly α (the
+  SciPy multivariate-normal check passed), but it front-loads: the first of five equal looks
+  got a boundary of 4.38 instead of the standard 4.88. The correct two-sided form is
+  4 − 4Φ(z_{α/4}/√t), which now matches 4.877 / 3.357 / 2.680 / 2.290 / 2.031. Lesson: the
+  total-α check alone could not catch it.
+- **Infinite boundaries broke the recursion grid.** With 14 daily looks, look 1 spends about
+  1e-16 of α, so its boundary is infinite. Such looks now never stop, and the grid is truncated
+  at |z| = 8.
+- **pytest collected statsmodels' `test_proportions_2indep`** as a test because it was imported
+  under its own name. It is now imported under an alias.
+- **numpy bools broke `json.dumps`** in the validation report. Values are cast to Python types.
+- **Smoke-suite planned n was off by up to 70%** (D-07). Recomputed from a 400k-unit pilot with
+  `stats.power`: revenue needs 33,414 total at rho 0.5 (was 37,000) and 21,916 at rho 0.9
+  (was 37,000); revenue_per_session needs 33,896 (was 40,000). Plans and n_total now use the
+  power-derived n rounded up to the next 1,000, and a slow test recomputes them.
+
+### Tolerance changes
+
+- `test_bootstrap_close_to_scipy`: my first tolerance (5% of the se) assumed the Monte Carlo
+  error of a 2.5% quantile at B=4,000 was about 2% of the se. It is actually
+  sqrt(q(1-q)/B)/φ(z_q) ≈ 4%, and two independent bootstraps differ by about 6%. The observed
+  gap of 7.7% was 1.3 sd. Changed to B=20,000 with a tolerance of 0.11 se (about 4 sd).
+  This is a test-design error, not an engine bug.
+
+### Validation results (2,000 reps, n=10,000 per experiment)
+
+- CI coverage, nominal 95%: 94.1% to 94.8% for z, Welch, delta method and CUPED. The
+  bootstrap covers 93.7% (285 reps, n=4,000).
+- A/A false-positive rate: 4.5% to 4.9%.
+- Peeking with 14 daily looks: naive 22.3%, OBF 4.75%, mSPRT 0.35%.
+- CUPED CI width relative to Welch: 1.00 / 0.935 / 0.607 at rho 0 / 0.5 / 0.9, matching
+  sqrt(1 − r²) for the realized r.
+
+### Open
+
+- **Relative CIs slightly under-cover.** Every method's relative CI covered 94.1% to 94.35%,
+  below its absolute CI, though inside the band. The delta-method ratio interval is mildly
+  anti-conservative at n=10k with skewed revenue. Consider Fieller or a log-ratio interval if
+  smaller experiments matter.
+- **mSPRT is very conservative here** (0.35% vs 5%), which will cost power. The tau choice
+  could be tuned, but tuning it on the validation results themselves would be circular.

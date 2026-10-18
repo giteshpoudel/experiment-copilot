@@ -1,4 +1,7 @@
-"""`expc` command line: simulate, list, describe. Later phases add serve, readout and eval."""
+"""`expc` command line: simulate, list, describe, validate.
+
+Later phases add serve, readout and eval.
+"""
 
 from __future__ import annotations
 
@@ -42,6 +45,28 @@ def simulate(
         f"(already present; use --overwrite to regenerate)."
     )
     typer.echo(f"Store: {store.data_dir.resolve()}")
+
+
+@app.command()
+def validate(
+    reps: Annotated[int, typer.Option(help="Simulated experiments per check")] = 2000,
+    out: Annotated[Path, typer.Option(help="Where to write the report")] = Path(
+        "results/validation.json"
+    ),
+) -> None:
+    """Validate the statistics engine on simulated A/A and A/B tests."""
+    from expcopilot.validation import run_all, write
+
+    report = run_all(reps=reps)
+    write(report, out)
+    for c in report["checks"]:
+        mark = "pass" if c["passed"] else "FAIL"
+        lo, hi = c["band"]
+        typer.echo(f"{mark}  {c['name']:<34} {c['observed']:.4f}  band [{lo:.3f}, {hi:.3f}]")
+    status = "all checks passed" if report["all_passed"] else "SOME CHECKS FAILED"
+    typer.echo(f"{status} in {report['runtime_seconds']} s; wrote {out}")
+    if not report["all_passed"]:
+        raise typer.Exit(1)
 
 
 @app.command("list")

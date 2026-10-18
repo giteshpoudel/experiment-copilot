@@ -192,3 +192,43 @@ def test_run_suite_small(store: Store, truth_store: TruthStore, monkeypatch) -> 
     result = run_suite("tiny", store, truth_store)
     assert result.created == ["smoke-01", "smoke-02", "smoke-03"]
     assert truth_store.get("smoke-02").knobs == sorted(SUITE["smoke-02"].knobs)
+
+
+@pytest.mark.slow
+def test_planned_n_matches_power() -> None:
+    """Each plan's planned_n_total is the power-derived n rounded up to the next 1,000.
+
+    Variances come from a 400k-unit control-only pilot with a fixed seed.
+    """
+    from expcopilot.stats.power import n_per_arm_binary, n_per_arm_continuous
+
+    required: dict[tuple[str, float], int] = {}
+    for s in smoke_suite():
+        p = s.plan
+        key = (p.primary_metric, s.covariate_rho)
+        if key not in required:
+            pilot = generate(
+                s.model_copy(
+                    update={
+                        "n_total": 400_000,
+                        "effects": [],
+                        "srm": None,
+                        "novelty": None,
+                        "daily": False,
+                        "seed": 7,
+                    }
+                )
+            ).units
+            r = pilot.column("revenue").to_numpy()
+            if p.primary_metric == "conversion":
+                n = n_per_arm_binary(s.baseline_conversion, p.mde)
+            elif p.primary_metric == "revenue":
+                n = n_per_arm_continuous(r.std(ddof=1), r.mean() * p.mde)
+            else:
+                x = pilot.column("sessions").to_numpy()
+                ratio = r.sum() / x.sum()
+                lin = (r - ratio * x) / x.mean()
+                n = n_per_arm_continuous(lin.std(ddof=1), ratio * p.mde)
+            required[key] = n
+        need = required[key] * len(s.arms)
+        assert need <= p.planned_n_total < need + 1_000, (s.experiment_id, need, p.planned_n_total)
