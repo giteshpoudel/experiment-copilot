@@ -1,0 +1,397 @@
+{
+  "generated_at": "2026-10-18T22:50:21+00:00",
+  "git_commit": "2dd3b0a",
+  "seed": 20261018,
+  "reps": 2000,
+  "runtime_seconds": 38.0,
+  "all_passed": true,
+  "checks": [
+    {
+      "name": "coverage_abs_two_proportion_z",
+      "method": "two_proportion_z",
+      "metric": "conversion",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9353798084827865,
+        0.9646201915172135
+      ],
+      "observed": 0.946,
+      "reps": 2000,
+      "observed_ci": [
+        0.9352119338168585,
+        0.955077997283484
+      ],
+      "note": "n=10000, true lift +10%",
+      "passed": true
+    },
+    {
+      "name": "coverage_rel_two_proportion_z",
+      "method": "two_proportion_z",
+      "metric": "conversion",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9353798084827865,
+        0.9646201915172135
+      ],
+      "observed": 0.9425,
+      "reps": 2000,
+      "observed_ci": [
+        0.931423506198168,
+        0.9518798447253781
+      ],
+      "note": "n=10000, true lift +10%",
+      "passed": true
+    },
+    {
+      "name": "aa_fpr_two_proportion_z",
+      "method": "two_proportion_z",
+      "metric": "conversion",
+      "kind": "false_positive_rate",
+      "target": 0.05,
+      "band": [
+        0.03537980848278656,
+        0.06462019151721345
+      ],
+      "observed": 0.045,
+      "reps": 2000,
+      "observed_ci": [
+        0.036753680274317455,
+        0.05499089674214931
+      ],
+      "note": "A/A, n=10000",
+      "passed": true
+    },
+    {
+      "name": "coverage_abs_welch_t",
+      "method": "welch_t",
+      "metric": "revenue",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9353798084827865,
+        0.9646201915172135
+      ],
+      "observed": 0.9435,
+      "reps": 2000,
+      "observed_ci": [
+        0.9325048021273105,
+        0.9527947145610346
+      ],
+      "note": "n=10000, true lift +15%",
+      "passed": true
+    },
+    {
+      "name": "coverage_rel_welch_t",
+      "method": "welch_t",
+      "metric": "revenue",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9353798084827865,
+        0.9646201915172135
+      ],
+      "observed": 0.941,
+      "reps": 2000,
+      "observed_ci": [
+        0.929803163026387,
+        0.9505059392499606
+      ],
+      "note": "n=10000, true lift +15%",
+      "passed": true
+    },
+    {
+      "name": "aa_fpr_welch_t",
+      "method": "welch_t",
+      "metric": "revenue",
+      "kind": "false_positive_rate",
+      "target": 0.05,
+      "band": [
+        0.03537980848278656,
+        0.06462019151721345
+      ],
+      "observed": 0.047,
+      "reps": 2000,
+      "observed_ci": [
+        0.03856126203966128,
+        0.05717564650640345
+      ],
+      "note": "A/A, n=10000",
+      "passed": true
+    },
+    {
+      "name": "coverage_abs_delta_method",
+      "method": "delta_method",
+      "metric": "revenue_per_session",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9353798084827865,
+        0.9646201915172135
+      ],
+      "observed": 0.943,
+      "reps": 2000,
+      "observed_ci": [
+        0.9319640457134198,
+        0.9523373880925255
+      ],
+      "note": "n=10000, true lift +15%",
+      "passed": true
+    },
+    {
+      "name": "coverage_rel_delta_method",
+      "method": "delta_method",
+      "metric": "revenue_per_session",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9353798084827865,
+        0.9646201915172135
+      ],
+      "observed": 0.9415,
+      "reps": 2000,
+      "observed_ci": [
+        0.9303430674015107,
+        0.9509641177572363
+      ],
+      "note": "n=10000, true lift +15%",
+      "passed": true
+    },
+    {
+      "name": "aa_fpr_delta_method",
+      "method": "delta_method",
+      "metric": "revenue_per_session",
+      "kind": "false_positive_rate",
+      "target": 0.05,
+      "band": [
+        0.03537980848278656,
+        0.06462019151721345
+      ],
+      "observed": 0.049,
+      "reps": 2000,
+      "observed_ci": [
+        0.040373396150675284,
+        0.0593558439249874
+      ],
+      "note": "A/A, n=10000",
+      "passed": true
+    },
+    {
+      "name": "coverage_abs_cuped_welch",
+      "method": "cuped_welch",
+      "metric": "revenue",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9353798084827865,
+        0.9646201915172135
+      ],
+      "observed": 0.9475,
+      "reps": 2000,
+      "observed_ci": [
+        0.9368389970748013,
+        0.9564451826727397
+      ],
+      "note": "n=10000, true lift +15%",
+      "passed": true
+    },
+    {
+      "name": "coverage_rel_cuped_welch",
+      "method": "cuped_welch",
+      "metric": "revenue",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9353798084827865,
+        0.9646201915172135
+      ],
+      "observed": 0.9435,
+      "reps": 2000,
+      "observed_ci": [
+        0.9325048021273105,
+        0.9527947145610346
+      ],
+      "note": "n=10000, true lift +15%",
+      "passed": true
+    },
+    {
+      "name": "aa_fpr_cuped_welch",
+      "method": "cuped_welch",
+      "metric": "revenue",
+      "kind": "false_positive_rate",
+      "target": 0.05,
+      "band": [
+        0.03537980848278656,
+        0.06462019151721345
+      ],
+      "observed": 0.0475,
+      "reps": 2000,
+      "observed_ci": [
+        0.039013879394732026,
+        0.05772111203373219
+      ],
+      "note": "A/A, n=10000",
+      "passed": true
+    },
+    {
+      "name": "coverage_abs_bootstrap",
+      "method": "bootstrap_percentile",
+      "metric": "revenue",
+      "kind": "coverage",
+      "target": 0.95,
+      "band": [
+        0.9122508278236462,
+        0.9877491721763537
+      ],
+      "observed": 0.94,
+      "reps": 300,
+      "observed_ci": [
+        0.90715983751747,
+        0.9617139440845225
+      ],
+      "note": "n=4000, B=1000",
+      "passed": true
+    },
+    {
+      "name": "aa_fpr_bootstrap",
+      "method": "bootstrap_percentile",
+      "metric": "revenue",
+      "kind": "false_positive_rate",
+      "target": 0.05,
+      "band": [
+        0.012250827823646254,
+        0.08774917217635375
+      ],
+      "observed": 0.043333333333333335,
+      "reps": 300,
+      "observed_ci": [
+        0.025496203603204263,
+        0.07271812912806098
+      ],
+      "note": "n=4000, B=1000",
+      "passed": true
+    },
+    {
+      "name": "peeking_naive_inflates",
+      "method": "naive_peeking",
+      "metric": "conversion",
+      "kind": "inflation",
+      "target": 0.05,
+      "band": [
+        0.1,
+        1.0
+      ],
+      "observed": 0.223,
+      "reps": 2000,
+      "observed_ci": [
+        0.20529747667669382,
+        0.24176460647399037
+      ],
+      "note": "A/A, n=10000, 14 daily looks; passes if FPR >= 2x alpha",
+      "passed": true
+    },
+    {
+      "name": "peeking_fpr_obf",
+      "method": "group_sequential_obf",
+      "metric": "conversion",
+      "kind": "false_positive_rate",
+      "target": 0.05,
+      "band": [
+        0.0,
+        0.06462019151721345
+      ],
+      "observed": 0.0475,
+      "reps": 2000,
+      "observed_ci": [
+        0.039013879394732026,
+        0.05772111203373219
+      ],
+      "note": "A/A, n=10000, 14 daily looks",
+      "passed": true
+    },
+    {
+      "name": "peeking_fpr_msprt",
+      "method": "msprt",
+      "metric": "conversion",
+      "kind": "false_positive_rate",
+      "target": 0.05,
+      "band": [
+        0.0,
+        0.06462019151721345
+      ],
+      "observed": 0.0035,
+      "reps": 2000,
+      "observed_ci": [
+        0.0016964100455623193,
+        0.007207287731747025
+      ],
+      "note": "A/A, n=10000, 14 daily looks, tau=0.0100",
+      "passed": true
+    },
+    {
+      "name": "cuped_width_rho_0.0",
+      "method": "cuped_welch",
+      "metric": "revenue",
+      "kind": "cuped_width",
+      "target": 0.9999999504926449,
+      "band": [
+        0.9499999529680127,
+        1.0499999480172773
+      ],
+      "observed": 0.9999622471379404,
+      "reps": 200,
+      "observed_ci": null,
+      "note": "CI width ratio CUPED/Welch; mean realized r=0.000; passes within 5%",
+      "passed": true
+    },
+    {
+      "name": "cuped_width_rho_0.5",
+      "method": "cuped_welch",
+      "metric": "revenue",
+      "kind": "cuped_width",
+      "target": 0.9355486124716015,
+      "band": [
+        0.8887711818480214,
+        0.9823260430951816
+      ],
+      "observed": 0.9349832523848834,
+      "reps": 200,
+      "observed_ci": null,
+      "note": "CI width ratio CUPED/Welch; mean realized r=0.353; passes within 5%",
+      "passed": true
+    },
+    {
+      "name": "cuped_width_rho_0.9",
+      "method": "cuped_welch",
+      "metric": "revenue",
+      "kind": "cuped_width",
+      "target": 0.6079984577152548,
+      "band": [
+        0.5775985348294921,
+        0.6383983806010176
+      ],
+      "observed": 0.6073466833304687,
+      "reps": 200,
+      "observed_ci": null,
+      "note": "CI width ratio CUPED/Welch; mean realized r=0.794; passes within 5%",
+      "passed": true
+    },
+    {
+      "name": "cuped_width_monotone",
+      "method": "cuped_welch",
+      "metric": "revenue",
+      "kind": "cuped_width",
+      "target": 1.0,
+      "band": [
+        1.0,
+        1.0
+      ],
+      "observed": 1.0,
+      "reps": 200,
+      "observed_ci": null,
+      "note": "width ratio strictly falls as rho rises",
+      "passed": true
+    }
+  ]
+}
