@@ -55,9 +55,8 @@ Running log for the README's "what the evals caught" section. Newest last.
 
 ### Open
 
-- `planned_n_total` values in the smoke suite are hand-computed approximations to 80% power.
-  Recompute them with `stats.power` in Phase 2, especially for the revenue plans, whose variance
-  depends on rho.
+- ~~`planned_n_total` values in the smoke suite are hand-computed approximations to 80% power.~~
+  Closed in Phase 2: recomputed with `stats.power` (see below).
 
 ## Phase 2: statistics engine, validated (2026-10-18)
 
@@ -112,8 +111,8 @@ Running log for the README's "what the evals caught" section. Newest last.
 ### Validation results (2,000 reps, n=10,000 per experiment)
 
 - CI coverage, nominal 95%: 94.1% to 94.8% for z, Welch, delta method and CUPED. The
-  bootstrap covers 93.7% (285 reps, n=4,000).
-- A/A false-positive rate: 4.5% to 4.9%.
+  bootstrap covers 94.0% (300 reps, n=4,000, B=1,000).
+- A/A false-positive rate: 4.5% to 4.9% (bootstrap 4.3%).
 - Peeking with 14 daily looks: naive 22.3%, OBF 4.75%, mSPRT 0.35%.
 - CUPED CI width relative to Welch: 1.00 / 0.935 / 0.607 at rho 0 / 0.5 / 0.9, matching
   sqrt(1 − r²) for the realized r.
