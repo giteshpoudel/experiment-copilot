@@ -18,6 +18,7 @@ from pydantic import Field
 
 from expcopilot.analysis import DEFAULT_METHOD, METHOD_NAMES, AnalysisError, Analyzer
 from expcopilot.models import MetricType
+from expcopilot.readout import readout_prompt
 from expcopilot.results import (
     AdjustPValuesResult,
     AnalyzeMetricResult,
@@ -55,44 +56,6 @@ MetricName = Annotated[str, Field(description="Metric name from describe_experim
 ArmName = Annotated[
     str | None, Field(description="Treatment arm to compare with control; default: the first")
 ]
-
-READOUT_PROMPT = """\
-Write a ship / don't-ship readout for experiment {experiment_id}.
-
-Process (use the tools in this order):
-1. describe_experiment: note the arms, the primary metric, guardrails, MDE, alpha, planned n
-   and the pre-registered decision rule.
-2. check_srm: if it fails, the decision is INVALID; say so and stop analyzing effects.
-3. analyze_metric on the primary metric. Use cuped_covariate if the experiment has a
-   pre-period covariate for that metric (e.g. pre_revenue for revenue).
-4. analyze_metric on every guardrail metric; each comparison reports whether it passed.
-5. If there are several treatment arms, adjust_pvalues over the primary comparisons using the
-   plan's multiple-testing method.
-6. If the plan has interim looks, run sequential_test. If the experiment has daily data, run
-   daily_effects on the primary metric to check for a novelty effect.
-7. Optional: segment_effects, always labelled exploratory.
-
-Decision: apply the plan's decision rule exactly, in order:
-- INVALID if the SRM check failed;
-- SHIP if the primary metric's CI excludes zero on the good side (direction = "better", after
-  any multiple-testing adjustment) and every guardrail passed;
-- EXTEND if the primary result is inconclusive and the observed n is below the planned n;
-- DON'T SHIP otherwise.
-Do not override the rule with your own judgement; put concerns (e.g. a decaying daily effect)
-under Caveats.
-
-Readout format:
-## Decision: <SHIP | DON'T SHIP | EXTEND | INVALID>
-## Primary result
-## Guardrails
-## Validity checks (SRM, peeking, novelty)
-## Caveats
-## Exploratory findings
-
-Citation rule: every number must be copied from a tool result and followed by its result_id in
-brackets, e.g. "+8.73% (95% CI +2.10% to +15.4%) [r-3fa9c2d1.treatment]". Never compute,
-round or convert a number yourself; call `calculate` if you need arithmetic.
-"""
 
 
 def _tool_errors(fn: Callable[P, R]) -> Callable[P, R]:
@@ -367,7 +330,7 @@ def build_server(store: Store) -> FastMCP:
     @mcp.prompt
     def experiment_readout(experiment_id: str) -> str:
         """Readout template: tool order, the pre-registered decision rule and citation rules."""
-        return READOUT_PROMPT.format(experiment_id=experiment_id)
+        return readout_prompt(experiment_id, citation="result_id")
 
     return mcp
 

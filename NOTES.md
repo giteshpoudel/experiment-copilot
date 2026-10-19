@@ -162,3 +162,43 @@ Running log for the README's "what the evals caught" section. Newest last.
   spike really is in the data. Only `daily_effects` shows that the lift fades (day 1 +48.8%,
   day 14 +6.6%, trend p = 0.011). This is a good eval scenario: a correct agent must run
   daily_effects and flag the stop as novelty-driven.
+
+## Phase 4: readout agent (2026-10-19)
+
+### Decisions
+
+- **DeepSeek through the `openai` SDK** (the user has a Claude Pro subscription but no API
+  credits). Agent model `deepseek-v4-pro` (V4-Pro-0813); judge `deepseek-flash`
+  (V4.1-Flash-1017), so the judge is a different model. The `llm.py` interface is narrow, so a
+  Claude adapter can be added later. Every result records the model the API reports, because
+  DeepSeek remaps aliases silently.
+- **Thinking mode on**, `reasoning_effort=high`. `reasoning_content` is sent back on every
+  later request in a tool-using turn (DeepSeek returns 400 otherwise). Temperature is ignored
+  in thinking mode, so runs vary; that is why Phase 5 runs each config 3 times.
+- **Manual loop** with caps of 12 turns and 30 tool calls. When a cap is hit, the model gets a
+  final `tool_choice="none"` turn and the readout is marked truncated. Tool errors and invalid
+  JSON arguments go back to the model as `ERROR: ...` tool messages.
+- **Short `[rN]` labels in readouts**, mapped in the trace to the server's stable
+  `r-xxxxxxxx` ids. One template (`readout.py`) serves both the MCP prompt (cites result ids)
+  and the agent (cites labels).
+- **Cost accounting** uses DeepSeek's cache-hit and cache-miss token counts and the
+  peak/off-peak price table.
+
+### Observed in the first live runs (deepseek-v4-pro)
+
+| Run | Decision | Turns / tool calls | Tokens (cache hits) | Cost | Time |
+| --- | --- | --- | --- | --- | --- |
+| smoke-15 agent | INVALID (SRM) | 3 / 2 | 12.4k (7.9k) | $0.0049 | 12 s |
+| smoke-03 agent | DON'T SHIP (bounce guardrail failed) | 4 / 4 | 18.2k (13.1k) | $0.0093 | 28 s |
+| smoke-03 baseline | SHIP | 1 / 0 | 0.7k in, 11k out | $0.0222 | 84 s |
+
+- **The baseline did statistics in prose and made a unit error.** It computed its own SEs,
+  CIs, z-test and SRM χ² (the core rule forbids this), then compared bounce's *absolute* CI
+  upper bound (0.0206) with the plan's *relative* 5% margin (about 0.0148 here). Under the
+  plan's rule the guardrail fails, so its SHIP was wrong. This is a "what the evals caught"
+  example: tools return the guardrail verdict, so the agent never has to handle margin units.
+- **The guardrail rule is underpowered (open, see D-19).** Smoke-03's true bounce effect is 0,
+  yet the non-inferiority check failed: the relative CI half-width is about 3.5% at 15k per
+  arm, so with a 5% margin a harmless change fails about 20% of the time. The agent applied
+  the rule correctly. The rule itself needs a decision before the Phase 5 oracle labels
+  scenarios.

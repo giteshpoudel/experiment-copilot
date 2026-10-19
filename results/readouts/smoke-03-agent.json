@@ -1,0 +1,78 @@
+{
+  "experiment_id": "smoke-03",
+  "mode": "agent",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: DON'T SHIP\n\n## Primary result\n- **conversion** (primary, higher is better): treatment vs control **+11.6% (95% CI +4.18% to +19%), p = 0.0012; absolute +0.01147 (0.09908 -> 0.1105); better** [r3]\n- One treatment arm, so no primary multiple-testing adjustment was needed [r1].\n\n## Guardrails\n- **bounce** (guardrail, higher is worse, margin 5%): treatment vs control **+3.45% (95% CI -0.124% to +7.03%), p = 0.054; absolute +0.01019 (0.295 -> 0.3052); inconclusive; guardrail FAILED (worst case +7.03% vs margin 5%)** [r4]\n- The guardrail did not pass, so the ship condition is not met even though the primary metric improved.\n\n## Validity checks (SRM, peeking, novelty)\n- **SRM**: passed. Observed split control 49.79% / treatment 50.21%; chi2 = 0.5125, p = 0.47 [r2].\n- **Peeking**: no planned interim looks [r1], so no sequential test was run.\n- **Novelty**: no daily data available (`has_daily = false`) [r1], so daily effects could not be checked.\n- **CUPED**: no pre-period conversion covariate was available (covariates are pre_revenue and pre_sessions) [r1], so no CUPED adjustment was applied.\n\n## Caveats\n- The decision is driven entirely by the guardrail failure: the bounce CI's worst case (+7.03%) exceeds the pre-registered 5% margin [r4]. The primary conversion win cannot override this under the pre-registered decision rule.\n- Observed n reached the planned 30,000 [r1]; the decision is not an underpowered-extension case.\n\n## Exploratory findings\n- None run.",
+  "decision": "dont_ship",
+  "trace": [
+    {
+      "step": 1,
+      "label": "r1",
+      "tool": "describe_experiment",
+      "arguments": {
+        "experiment_id": "smoke-03"
+      },
+      "result_id": "r-26923f79",
+      "summary": "smoke-03 'one-page-checkout': 2 arms, 30,000 units. Primary conversion (MDE 10% relative, alpha 0.05); guardrails: bounce (margin 5%); planned n 30,000.",
+      "is_error": false,
+      "latency_s": 0.31667533377185464
+    },
+    {
+      "step": 2,
+      "label": "r2",
+      "tool": "check_srm",
+      "arguments": {
+        "experiment_id": "smoke-03"
+      },
+      "result_id": "r-ddd7b6fa",
+      "summary": "Observed split control 49.79% / treatment 50.21%; chi2 = 0.5125, p = 0.47; SRM check passed.",
+      "is_error": false,
+      "latency_s": 0.04911845829337835
+    },
+    {
+      "step": 3,
+      "label": "r3",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "smoke-03",
+        "metric": "conversion"
+      },
+      "result_id": "r-3d9d39f8",
+      "summary": "treatment vs control: +11.6% (95% CI +4.18% to +19%), p = 0.0012; absolute +0.01147 (0.09908 -> 0.1105); better",
+      "is_error": false,
+      "latency_s": 0.04087062506005168
+    },
+    {
+      "step": 3,
+      "label": "r4",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "smoke-03",
+        "metric": "bounce"
+      },
+      "result_id": "r-82baa4f3",
+      "summary": "treatment vs control: +3.45% (95% CI -0.124% to +7.03%), p = 0.054; absolute +0.01019 (0.295 -> 0.3052); inconclusive; guardrail FAILED (worst case +7.03% vs margin 5%)",
+      "is_error": false,
+      "latency_s": 0.009797915816307068
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18224,
+    "cache_hit_tokens": 13056,
+    "cache_miss_tokens": 5168,
+    "output_tokens": 2812,
+    "reasoning_tokens": 2139,
+    "cost_usd": 0.009266,
+    "requests": 4
+  },
+  "latency_s": 28.243966167327017,
+  "turns": 4,
+  "tool_calls": 4,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": []
+}

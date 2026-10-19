@@ -1,6 +1,6 @@
-"""`expc` command line: simulate, list, describe, validate, serve.
+"""`expc` command line: simulate, list, describe, validate, serve, readout.
 
-Later phases add readout and eval.
+Phase 5 adds eval.
 """
 
 from __future__ import annotations
@@ -79,6 +79,86 @@ def serve(data_dir: DataDir = None) -> None:
     except FileNotFoundError as e:
         typer.echo(str(e), err=True)
         raise typer.Exit(1) from None
+
+
+@app.command()
+def readout(
+    experiment_id: Annotated[str, typer.Argument(help="Experiment to write a readout for")],
+    no_tools: Annotated[
+        bool, typer.Option("--no-tools", help="Baseline: plan + summary table, no tools")
+    ] = False,
+    json_out: Annotated[
+        Path | None, typer.Option("--json", help="Also write the readout and trace as JSON")
+    ] = None,
+    model: Annotated[str | None, typer.Option(help="Override LLM_MODEL")] = None,
+    max_turns: Annotated[int, typer.Option(help="Cap on model turns")] = 12,
+    max_tool_calls: Annotated[int, typer.Option(help="Cap on tool calls")] = 30,
+    data_dir: DataDir = None,
+) -> None:
+    """Agent readout with its tool trace (or the no-tools baseline)."""
+    import asyncio
+    import json
+
+    from expcopilot.agent import MAX_TURNS, run_agent, server_transport
+    from expcopilot.baseline import run_baseline
+    from expcopilot.llm import MissingAPIKeyError, from_env
+
+    try:
+        llm = from_env("agent", model=model)
+    except MissingAPIKeyError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(2) from None
+    store = Store(data_dir, read_only=True)
+    if not store.exists(experiment_id):
+        typer.echo(f"No experiment {experiment_id!r}.", err=True)
+        raise typer.Exit(1)
+    if no_tools:
+        result = run_baseline(experiment_id, llm, store)
+    else:
+        result = asyncio.run(
+            run_agent(
+                experiment_id,
+                llm,
+                server_transport(store.data_dir),
+                max_turns=max_turns or MAX_TURNS,
+                max_tool_calls=max_tool_calls,
+            )
+        )
+    typer.echo(format_readout(result))
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_text(json.dumps(result.to_dict(), indent=2, default=str) + "\n")
+        typer.echo(f"Wrote {json_out}")
+
+
+def format_readout(r) -> str:  # r: agent.Readout
+    u = r.usage
+    lines = [r.text, "", "=" * 78, f"{r.mode} readout | decision: {r.decision or 'UNPARSED'}"]
+    if r.trace:
+        lines += ["", "Tool trace:"]
+        for t in r.trace:
+            args = (
+                t.arguments
+                if isinstance(t.arguments, str)
+                else ", ".join(f"{k}={v}" for k, v in t.arguments.items() if v is not None)
+            )
+            tag = f"[{t.label}]" if t.label else "[error]"
+            rid = f" {t.result_id}" if t.result_id else ""
+            lines.append(f"  {tag:<7} {t.tool}({args}){rid}")
+            lines.append(f"          {t.summary[:160]}")
+    lines += [
+        "",
+        f"model {r.model} (served by {', '.join(r.models_seen)}); {r.turns} turns, "
+        f"{r.tool_calls} tool calls{' (TRUNCATED)' if r.truncated else ''}",
+        f"tokens: {u.prompt_tokens:,} prompt ({u.cache_hit_tokens:,} cache hits), "
+        f"{u.output_tokens:,} output ({u.reasoning_tokens:,} reasoning); "
+        f"cost ${u.cost_usd:.4f}; {r.latency_s:.1f} s",
+    ]
+    for issue in r.citation_issues:
+        lines.append(f"CITATION ISSUE: {issue}")
+    for note in r.notes:
+        lines.append(f"note: {note}")
+    return "\n".join(lines)
 
 
 @app.command("list")

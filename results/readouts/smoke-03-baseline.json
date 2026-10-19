@@ -1,0 +1,27 @@
+{
+  "experiment_id": "smoke-03",
+  "mode": "baseline",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: SHIP\n\n## Primary result\n- **conversion**: control 0.0990762 (n=14,938) vs treatment 0.110543 (n=15,062)\n- Difference = 0.0114668 = +1.15 percentage points\n- SE \u2248 0.003536\n- 95% CI \u2248 [0.004536, 0.018397]\n- z \u2248 3.24, p \u2248 0.0012\n\nHigher conversion is the good direction, and the treatment lift is positive. The primary effect remains significant after Holm adjustment; under a conservative two-sided alpha/2 = 0.025 threshold, the 97.5% CI \u2248 [0.003541, 0.019392], still excluding zero.\n\n## Guardrails\n- **bounce**: control 0.295019 vs treatment 0.305205\n- Difference = 0.010186 = +1.02 percentage points\n- SE \u2248 0.005292\n- 95% CI \u2248 [-0.000185, 0.020557]\n\nThe bounce CI is within the pre-specified 0.05 margin: upper bound \u2248 0.0206 < 0.05. Guardrail passes.\n\n## Validity checks (SRM, peeking, novelty)\n- **SRM**: Assuming 1:1 randomization, expected n = 15,000 per arm; observed control=14,938, treatment=15,062. Chi-square(1) \u2248 0.513, p \u2248 0.474, which is well above srm_alpha = 0.001. No SRM issue.\n- **Peeking**: planned_looks is empty, so no interim looks or alpha-spending adjustment are indicated.\n- **Novelty**: Only aggregate summary data are available; no daily or segment-level data to assess novelty/decay.\n\n## Caveats\n- Secondary **revenue** is descriptively lower in treatment: 8.3702 vs 8.6028, but no variance/CI can be computed from the summary table. This is not part of the primary ship gate.\n- The bounce point estimate increased, though its CI includes zero and passed the guardrail margin; it may still be worth monitoring.\n- Aggregate data cannot rule out a decaying effect over time; durability of the conversion lift is not assessable from this table.\n- Observed total n = 30,000 equals planned_n_total, and the primary result is conclusive, so the EXTEND branch does not apply.\n\n## Exploratory findings\n- Sessions are similar: control 4.00864 vs treatment 3.98095.\n- Revenue per session is descriptively lower in treatment: 2.14607 vs 2.10257.\n- Conversion relative lift is approximately +11.6% over control (0.0114668 / 0.0990762).",
+  "decision": "ship",
+  "trace": [],
+  "usage": {
+    "prompt_tokens": 736,
+    "cache_hit_tokens": 0,
+    "cache_miss_tokens": 736,
+    "output_tokens": 10985,
+    "reasoning_tokens": 10378,
+    "cost_usd": 0.022236,
+    "requests": 1
+  },
+  "latency_s": 83.59285862511024,
+  "turns": 1,
+  "tool_calls": 0,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": []
+}
