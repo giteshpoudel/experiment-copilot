@@ -197,8 +197,25 @@ Running log for the README's "what the evals caught" section. Newest last.
   upper bound (0.0206) with the plan's *relative* 5% margin (about 0.0148 here). Under the
   plan's rule the guardrail fails, so its SHIP was wrong. This is a "what the evals caught"
   example: tools return the guardrail verdict, so the agent never has to handle margin units.
-- **The guardrail rule is underpowered (open, see D-19).** Smoke-03's true bounce effect is 0,
+- **The guardrail rule was underpowered (D-19, now settled; see below).** Smoke-03's true bounce effect is 0,
   yet the non-inferiority check failed: the relative CI half-width is about 3.5% at 15k per
   arm, so with a 5% margin a harmless change fails about 20% of the time. The agent applied
   the rule correctly. The rule itself needs a decision before the Phase 5 oracle labels
   scenarios.
+
+### Decision: guardrails fail only on statistically significant harm (D-19, user's choice)
+
+- Replaced the non-inferiority rule ("the CI's bad-side bound must stay inside a 5% relative
+  margin") with **"fail only if the CI at the plan's alpha lies entirely on the harmful side
+  of zero"**. `GuardrailSpec` no longer has a margin; `DecisionRule.guardrail_check` is
+  `no_significant_harm`.
+- Why: with a 5% margin at 15k per arm, a change with zero true harm failed about 20% of the
+  time (smoke-03). The new rule blocks a harmless change about 2.5% of the time (one tail at
+  alpha 0.05).
+- Trade-off, accepted: an underpowered guardrail can now miss a small real harm, because
+  "not significant" is not "no harm". Readouts should say so when a guardrail is inconclusive
+  with a worse-looking point estimate. Phase 5 should include a scenario with a small real
+  guardrail harm to measure this.
+- Effect on smoke-03: bounce +3.45% (CI −0.124% to +7.03%) is now a pass, so its decision under
+  the rule is SHIP. The saved Phase 4 readout (`results/readouts/smoke-03-agent.json`) predates
+  this change and shows DON'T SHIP.

@@ -154,9 +154,8 @@ class PowerResult(ToolResult):
 
 
 class GuardrailCheck(Model):
-    margin: float
-    worst_case_relative: float | None = Field(
-        description="CI bound on the harmful side of the relative effect"
+    rule: Literal["no_significant_harm"] = Field(
+        description="Fails only when the CI lies entirely on the harmful side of zero"
     )
     passed: bool
 

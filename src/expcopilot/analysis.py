@@ -280,12 +280,7 @@ class Analyzer:
         exp = loaded.experiment
         counts = self.store.arm_counts(experiment_id)
         p = exp.plan
-        guard = (
-            ", ".join(
-                f"{g.metric} (margin {fmt_pct(g.margin, signed=False)})" for g in p.guardrails
-            )
-            or "none"
-        )
+        guard = ", ".join(g.metric for g in p.guardrails) or "none"
         summary = (
             f"{exp.experiment_id} '{exp.name}': {len(exp.arms)} arms, "
             f"{sum(counts.values()):,} units. Primary {p.primary_metric} "
@@ -477,15 +472,12 @@ class Analyzer:
             guardrail = None
             summary = self._comparison_summary(arm, control, est, direction)
             if guard is not None:
-                worst = est.rel_ci[0] if m.higher_is_better else est.rel_ci[1]
-                passed = worst > -guard.margin if m.higher_is_better else worst < guard.margin
-                guardrail = GuardrailCheck(
-                    margin=guard.margin, worst_case_relative=sig(worst), passed=bool(passed)
-                )
+                passed = direction != "worse"
+                guardrail = GuardrailCheck(rule="no_significant_harm", passed=passed)
                 summary += (
-                    f"; guardrail {'passed' if passed else 'FAILED'} "
-                    f"(worst case {fmt_pct(worst)} vs margin "
-                    f"{fmt_pct(guard.margin, signed=False)})"
+                    "; guardrail passed (no statistically significant harm)"
+                    if passed
+                    else "; guardrail FAILED (statistically significant harm)"
                 )
             if est.variance_reduction is not None:
                 summary += (

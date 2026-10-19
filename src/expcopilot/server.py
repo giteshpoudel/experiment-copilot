@@ -91,7 +91,7 @@ def build_server(store: Store) -> FastMCP:
     def describe_experiment(experiment_id: ExperimentId) -> DescribeExperimentResult:
         """Arms with planned shares and observed units, metrics with types, covariates,
         segments, daily-data availability, and the full pre-registered plan (primary metric,
-        guardrails with margins, MDE, alpha, planned n, interim looks, decision rule).
+        guardrails, MDE, alpha, planned n, interim looks, decision rule).
 
         Use this first for any experiment: everything else depends on the plan. It reports
         no effects; use analyze_metric for those.

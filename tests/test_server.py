@@ -103,7 +103,8 @@ def test_resources_and_prompt(server) -> None:
     assert resources == {"experiments://registry", "metrics://definitions"}
     assert templates == {"experiments://{experiment_id}/plan"}
     assert registry["total"] == 20
-    assert plan["guardrails"] == [{"metric": "bounce", "margin": 0.05}]
+    assert plan["guardrails"] == [{"metric": "bounce"}]
+    assert plan["decision_rule"]["guardrail_check"] == "no_significant_harm"
     assert metrics["ratio"]["auto_method"] == "delta_method"
     text = prompt.messages[0].content.text
     assert "smoke-03" in text and "INVALID" in text and "result_id" in text
@@ -162,6 +163,17 @@ def test_guardrail_verdict(server) -> None:
     comp = out.comparisons[0]
     assert out.role == "guardrail" and comp.guardrail is not None
     assert comp.guardrail.passed is False and comp.direction == "worse"
+
+
+def test_inconclusive_guardrail_passes(server) -> None:
+    """Significant-harm rule: smoke-03's bounce rose a little (true effect 0) but not
+    significantly, so the guardrail passes."""
+    out = R.AnalyzeMetricResult.model_validate(
+        call(server, "analyze_metric", experiment_id="smoke-03", metric="bounce")
+    )
+    comp = out.comparisons[0]
+    assert comp.direction == "inconclusive" and comp.guardrail is not None
+    assert comp.guardrail.passed and "no statistically significant harm" in comp.summary
 
 
 def test_multi_arm_and_adjust(server) -> None:

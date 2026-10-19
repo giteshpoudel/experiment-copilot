@@ -30,7 +30,8 @@ DECISION_RULE = """\
 Decision: apply the plan's decision rule exactly, in order:
 - INVALID if the SRM check failed;
 - SHIP if the primary metric's CI excludes zero on the good side (direction = "better", after
-  any multiple-testing adjustment) and every guardrail passed;
+  any multiple-testing adjustment) and every guardrail passed (a guardrail fails only on
+  statistically significant harm, as reported by analyze_metric);
 - EXTEND if the primary result is inconclusive and the observed n is below the planned n;
 - DON'T SHIP otherwise.
 Do not override the rule with your own judgement; put concerns (e.g. a decaying daily effect)

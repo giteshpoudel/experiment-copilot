@@ -344,7 +344,7 @@ FOUR_ARMS = [
     Arm(name="variant_d", expected_share=0.25),
 ]
 
-BOUNCE_GUARDRAIL = GuardrailSpec(metric="bounce", margin=0.05)
+BOUNCE_GUARDRAIL = GuardrailSpec(metric="bounce")
 
 
 def _plan(primary: str = "conversion", **kw: object) -> PreRegisteredPlan:

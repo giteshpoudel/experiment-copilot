@@ -213,7 +213,7 @@ def format_experiment(exp: Experiment, counts: dict[str, int]) -> str:
         f"{m.name} [{m.type}{'' if m.higher_is_better else ', lower is better'}]"
         for m in exp.metrics
     )
-    guardrails = ", ".join(f"{g.metric} (margin {g.margin:.0%})" for g in p.guardrails) or "none"
+    guardrails = ", ".join(g.metric for g in p.guardrails) or "none"
     baseline = f"{p.baseline:.4g}" if p.baseline is not None else "n/a"
     looks = (
         ", ".join(str(d) for d in p.planned_looks) if p.planned_looks else "none (fixed horizon)"

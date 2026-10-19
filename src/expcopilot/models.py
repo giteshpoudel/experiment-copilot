@@ -88,14 +88,14 @@ class MetricDef(Model):
 
 
 class GuardrailSpec(Model):
-    """A metric that must not get worse by more than `margin` (relative, e.g. 0.05 = 5%).
+    """A metric that must not get significantly worse.
 
-    "Worse" follows the metric's `higher_is_better`. The check passes when the confidence
-    interval for the relative effect excludes harm beyond the margin.
+    "Worse" follows the metric's `higher_is_better`. The guardrail fails only when the effect's
+    CI at the plan's alpha lies entirely on the harmful side of zero (statistically significant
+    harm); an inconclusive or improving guardrail passes.
     """
 
     metric: str
-    margin: float = Field(ge=0, lt=1)
 
 
 class DecisionRule(Model):
@@ -103,7 +103,8 @@ class DecisionRule(Model):
 
     1. `invalid`   if the SRM chi-square p-value < `srm_alpha`
     2. `ship`      if the primary metric's CI (at the plan's alpha, after any multiple-testing
-                   adjustment) lies entirely on the good side of zero, and every guardrail passes
+                   adjustment) lies entirely on the good side of zero, and no guardrail's CI lies
+                   entirely on the harmful side of zero
     3. `extend`    if `extend_if_underpowered` and the primary result is inconclusive and the
                    observed sample is below the plan's `planned_n_total`
     4. `dont_ship` otherwise
@@ -113,14 +114,14 @@ class DecisionRule(Model):
 
     srm_alpha: float = Field(default=0.001, gt=0, lt=1)
     ship_requires: Literal["primary_ci_excludes_zero"] = "primary_ci_excludes_zero"
-    guardrail_check: Literal["ci_within_margin"] = "ci_within_margin"
+    guardrail_check: Literal["no_significant_harm"] = "no_significant_harm"
     extend_if_underpowered: bool = True
 
     def describe(self) -> str:
         parts = [
             f"invalid if SRM p < {self.srm_alpha:g}",
-            "ship if the primary CI excludes zero on the good side and every guardrail CI "
-            "stays within its margin",
+            "ship if the primary CI excludes zero on the good side and no guardrail shows "
+            "statistically significant harm",
         ]
         if self.extend_if_underpowered:
             parts.append("extend if inconclusive and n < planned n")
