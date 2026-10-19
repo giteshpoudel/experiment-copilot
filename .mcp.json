@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "experiment-copilot": {
+      "command": ".venv/bin/expc",
+      "args": ["serve"],
+      "env": { "EXPC_DATA_DIR": "data" }
+    }
+  }
+}

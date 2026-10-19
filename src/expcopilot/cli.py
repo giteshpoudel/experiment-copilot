@@ -1,6 +1,6 @@
-"""`expc` command line: simulate, list, describe, validate.
+"""`expc` command line: simulate, list, describe, validate, serve.
 
-Later phases add serve, readout and eval.
+Later phases add readout and eval.
 """
 
 from __future__ import annotations
@@ -67,6 +67,18 @@ def validate(
     typer.echo(f"{status} in {report['runtime_seconds']} s; wrote {out}")
     if not report["all_passed"]:
         raise typer.Exit(1)
+
+
+@app.command()
+def serve(data_dir: DataDir = None) -> None:
+    """Run the MCP server over stdio (for Claude Code, Claude Desktop or any MCP client)."""
+    from expcopilot.server import serve as run
+
+    try:
+        run(data_dir)
+    except FileNotFoundError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(1) from None
 
 
 @app.command("list")

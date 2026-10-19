@@ -125,3 +125,40 @@ Running log for the README's "what the evals caught" section. Newest last.
   smaller experiments matter.
 - **mSPRT is very conservative here** (0.35% vs 5%), which will cost power. The tau choice
   could be tuned, but tuning it on the validation results themselves would be circular.
+
+## Phase 3: MCP server (2026-10-19)
+
+### Decisions
+
+- **fastmcp pinned `>=4.1,<5`.** The plan (and my Phase 1 note) assumed v2 or v3, but 4.1.1 was
+  current. The APIs (decorator tools, URI-template resources, in-memory `Client`, structured
+  output from Pydantic return types) were confirmed with a smoke test before planning.
+- **Three layers:** `analysis.py` (load data, pick the method, call `stats/`), `results.py`
+  (Pydantic outputs), `server.py` (thin FastMCP wrappers plus docstrings). The Phase 5 oracle
+  can call `Analyzer` directly and run exactly the agent's code path.
+- **Numbers are rounded to 6 significant figures, and every result has a quotable `summary`**
+  (e.g. `+11.6% (95% CI +4.18% to +19%), p = 0.0012`), so the agent never formats or converts
+  numbers itself.
+- **Deterministic result ids**: `r-` + 8 hex characters of sha1(tool, inputs, data version).
+  Comparisons are `<id>.<arm>`. `adjust_pvalues` resolves ids from the same server process.
+- **Guardrail verdicts are computed by the tool** (worst-case CI bound vs margin), not by the
+  agent.
+- **Probabilities are never shown as a flat "100%"**: anything above 99.99% displays as
+  "> 99.99%".
+- **The store opens read-only for the server**: no schema creation and no writes (guarded
+  with PermissionError). The server data directory never contains `truth.duckdb`.
+- **Sequential tests on non-daily data** use units enrolled by day d, with final outcomes
+  treated as observed; the tool reports this in `assumptions`. Information fraction =
+  enrolled / max(planned n, final n).
+
+### Bugs caught
+
+- **Tool descriptions did not all say when to use the tool** (`check_srm`, `describe_experiment`,
+  `segment_effects`). A test now requires "Use ..." in every tool description.
+
+### Observed
+
+- **The novelty experiment (smoke-16) "stops" early under O'Brien-Fleming** on day 3: the early
+  spike really is in the data. Only `daily_effects` shows that the lift fades (day 1 +48.8%,
+  day 14 +6.6%, trend p = 0.011). This is a good eval scenario: a correct agent must run
+  daily_effects and flag the stop as novelty-driven.

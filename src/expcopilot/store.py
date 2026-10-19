@@ -70,9 +70,17 @@ def _sql_str(path: Path) -> str:
 class Store:
     """Experiment registry and unit data. Opens a short-lived connection per call."""
 
-    def __init__(self, data_dir: Path | str | None = None) -> None:
+    def __init__(self, data_dir: Path | str | None = None, read_only: bool = False) -> None:
+        """`read_only=True` (the MCP server) never creates files or tables."""
         self.data_dir = Path(data_dir) if data_dir is not None else default_data_dir()
         self.db_path = self.data_dir / "expc.duckdb"
+        self.read_only = read_only
+        if read_only:
+            if not self.db_path.exists():
+                raise FileNotFoundError(
+                    f"no experiment store at {self.db_path}; run `expc simulate --suite smoke`"
+                )
+            return
         self.data_dir.mkdir(parents=True, exist_ok=True)
         (self.data_dir / "units").mkdir(exist_ok=True)
         (self.data_dir / "daily").mkdir(exist_ok=True)
@@ -81,7 +89,7 @@ class Store:
 
     @contextmanager
     def connect(self, read_only: bool = False) -> Iterator[duckdb.DuckDBPyConnection]:
-        con = duckdb.connect(str(self.db_path), read_only=read_only)
+        con = duckdb.connect(str(self.db_path), read_only=read_only or self.read_only)
         try:
             yield con
         finally:
@@ -96,6 +104,7 @@ class Store:
         daily: pa.Table | None = None,
         overwrite: bool = False,
     ) -> None:
+        self._writable()
         eid = experiment.experiment_id
         self._check_units(experiment, units, daily)
         if self.exists(eid):
@@ -133,12 +142,17 @@ class Store:
             )
 
     def delete(self, experiment_id: str) -> None:
+        self._writable()
         row = self._row(experiment_id, "units_path, daily_path")
         for rel in row:
             if rel:
                 (self.data_dir / rel).unlink(missing_ok=True)
         with self.connect() as con:
             con.execute("DELETE FROM experiments WHERE experiment_id = ?", [experiment_id])
+
+    def _writable(self) -> None:
+        if self.read_only:
+            raise PermissionError("store was opened read-only")
 
     @staticmethod
     def _check_units(experiment: Experiment, units: pa.Table, daily: pa.Table | None) -> None:
@@ -182,6 +196,11 @@ class Store:
             ExperimentSummary(experiment_id=r[0], name=r[1], status=r[2], source=r[3], n_units=r[4])
             for r in rows
         ]
+
+    def data_version(self, experiment_id: str) -> str:
+        """Changes whenever the experiment is regenerated; part of every result id."""
+        (created,) = self._row(experiment_id, "created_at")
+        return created.isoformat()
 
     def units_path(self, experiment_id: str) -> Path:
         (rel,) = self._row(experiment_id, "units_path")
