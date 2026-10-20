@@ -128,7 +128,32 @@ Scores are deterministic wherever possible:
 A separate model judges only the quality of the explanation. Every configuration runs three
 times, and results are reported as the mean with the range across runs.
 
-<!-- EVAL_RESULTS -->
+### Results on the held-out test split
+
+40 scenarios × 3 runs per configuration; mean, with the range across runs where it varied
+([`evals/results/20261020T045531Z-test`](evals/results/20261020T045531Z-test/table.md)).
+
+| Metric | Agent (DeepSeek V4-Pro) | Agent (V4.1-Flash) | Same model, no tools |
+| --- | --- | --- | --- |
+| Decision matches the pre-registered rule | **98%** (98–100%) | **100%** | 73% (68–78%) |
+| Decision matches the true effect¹ | 86% (85–88%) | 88% | 62% (57–65%) |
+| False-ship rate¹ | 12% | 12% | 12% |
+| Required checks done (from the trace) | 100% | 100% | n/a |
+| Injected SRMs caught | 100% | 100% | 89% (67–100%) |
+| Numbers grounded in a tool result | **99%** (98–99%) | 96% | 47% (45–48%) |
+| No parseable decision | 1% (0–2%) | 0% | 3% (0–5%) |
+| Explanation quality (judge, 1–5) | 4.7 | 4.8 | 4.2 |
+| Cost / latency per readout | $0.0072 / 33 s | $0.0016 / 18 s | $0.0191 / 95 s |
+
+¹ The rule-following oracle itself agrees with the true effect on 88% of test scenarios, with a
+12% false-ship rate (novelty effects and small guardrail harms the pre-registered rule lets
+through). So the agents are at the ceiling the plan allows: the remaining gap is in the plan, not
+the agent.
+
+Without tools, the same model spends 2.7× as much and takes 3× as long, mostly reasoning
+through arithmetic, and still gets a quarter of the decisions wrong. Most of its misses are
+cautious "don't ship" calls on revenue tests, where it can't apply the CUPED adjustment the plan
+pre-registered.
 
 ## What the evals and tests caught
 
@@ -149,6 +174,11 @@ Some of the most useful output of this project was finding mistakes, including m
   1 in 5 changes with zero true harm at the planned sample sizes. Guardrails now fail only on
   statistically significant harm, and the eval includes small real harms to measure what that
   rule misses.
+- **A self-contradicting tool output.** In one test scenario the tool reported
+  `+6.98% (95% CI −0.157% to +14.1%), p = 0.047 … better`: the verdict came from the absolute
+  CI, which excluded zero, while the delta-method relative CI did not. Three agent runs read it
+  three ways (ship, don't ship, and no decision after running out of tokens). This was the only
+  scenario the Pro agent got wrong.
 - **Pre-registration gaps.** Whether to use CUPED, and which test applies after planned looks,
   could each flip a significance call. Both are now part of the plan, so the oracle is
   unambiguous.

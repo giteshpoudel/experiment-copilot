@@ -263,3 +263,32 @@ Running log for the README's "what the evals caught" section. Newest last.
 - **Grounding misses are mostly harmless format conversions** in the agent ("50/50 split" from
   shares of 0.5, "80% power" from 0.8). The scorer is deliberately strict; these are left as
   ungrounded.
+
+### Test split (40 scenarios x 3 configs x 3 runs, off-peak, $4.35, 26 min)
+
+| Metric | agent (V4-Pro) | agent-flash | baseline |
+| --- | --- | --- | --- |
+| Decision accuracy vs oracle | 98% (98-100%) | 100% | 73% (68-78%) |
+| Agreement with true effect | 86% (85-88%) | 88% | 62% (57-65%) |
+| False-ship rate | 12% | 12% | 12% |
+| Required checks | 100% | 100% | n/a |
+| SRM detected | 100% | 100% | 89% (67-100%) |
+| Grounded numbers | 99% (98-99%) | 96% | 47% (45-48%) |
+| Unparseable decision | 1% (0-2%) | 0% | 3% (0-5%) |
+| Judge (1-5) | 4.7 | 4.8 | 4.2 |
+| Cost / latency | $0.0072 / 33 s | $0.0016 / 18 s | $0.0191 / 95 s |
+
+- The oracle's own truth agreement on test is 88%, with a 12% false-ship rate: that is the ceiling
+  for any rule-following agent. The agents' false ships are exactly the oracle's (e054 novelty,
+  e061 small guardrail harm).
+- **Bug found on test (open): relative and absolute CIs can disagree.** e042: absolute CI 8.07e-05
+  to 0.0139 (p = 0.047, direction "better"), relative delta-method CI −0.157% to +14.1%. The
+  `summary` shows the relative CI next to the verdict "better", so the tool contradicts itself.
+  Agent runs: ship (correct), don't ship (trusted the relative CI), and no decision (hit
+  max_tokens deliberating). Ties to the Phase 2 open item that relative CIs slightly under-cover.
+  Proposed fix: a Fieller interval for the ratio. At θ = 1 its test statistic is exactly the
+  unpooled Wald z for the difference, so "relative CI excludes 0" ⇔ "absolute test rejects", and
+  coverage improves. It was found on the test split, so any rerun after the fix must be
+  disclosed as such.
+- One agent tool call passed an unexpected argument; the server's validation error went back to
+  the model, which recovered.
