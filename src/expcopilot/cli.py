@@ -1,7 +1,4 @@
-"""`expc` command line: simulate, list, describe, validate, serve, readout.
-
-Phase 5 adds eval.
-"""
+"""`expc` command line: simulate, list, describe, validate, serve, readout, eval."""
 
 from __future__ import annotations
 
@@ -159,6 +156,118 @@ def format_readout(r) -> str:  # r: agent.Readout
     for note in r.notes:
         lines.append(f"note: {note}")
     return "\n".join(lines)
+
+
+SCENARIOS = Path("evals/scenarios.jsonl")
+
+
+@app.command("eval-build")
+def eval_build(
+    force: Annotated[
+        bool, typer.Option(help="Overwrite existing labels (only before any eval has run)")
+    ] = False,
+    data_dir: DataDir = None,
+) -> None:
+    """Generate the eval suite and write oracle + truth labels to evals/scenarios.jsonl."""
+    from collections import Counter
+
+    from expcopilot.evals.oracle import build_scenarios, write_scenarios
+
+    if SCENARIOS.exists() and not force:
+        typer.echo(
+            f"{SCENARIOS} exists; labels are never regenerated silently. "
+            "Use --force only before any eval run.",
+            err=True,
+        )
+        raise typer.Exit(1)
+    store, truth = Store(data_dir), TruthStore(data_dir)
+    run_suite("eval", store, truth)
+    scenarios = build_scenarios(store, truth)
+    write_scenarios(scenarios, SCENARIOS)
+    splits = Counter(s["split"] for s in scenarios)
+    decisions = Counter(s["oracle"]["decision"] for s in scenarios)
+    typer.echo(
+        f"Wrote {len(scenarios)} scenarios to {SCENARIOS}: {dict(splits)}; "
+        f"oracle decisions {dict(decisions)}"
+    )
+
+
+@app.command("eval")
+def eval_(
+    split: Annotated[str, typer.Option(help="dev | test | all")] = "dev",
+    configs: Annotated[
+        str, typer.Option(help="Comma-separated: agent, baseline, agent-flash")
+    ] = "agent,baseline",
+    runs: Annotated[int, typer.Option(help="Runs per config (report mean and range)")] = 3,
+    limit: Annotated[int | None, typer.Option(help="Only the first N scenarios")] = None,
+    concurrency: Annotated[int, typer.Option(help="Readouts in flight at once")] = 8,
+    judge: Annotated[bool, typer.Option(help="Score explanation quality with the judge")] = True,
+    data_dir: DataDir = None,
+) -> None:
+    """Run the eval: agent vs baseline on a split, scored against oracle and truth labels."""
+    import asyncio
+
+    from expcopilot.evals.oracle import load_scenarios
+    from expcopilot.evals.run import CONFIGS, aggregate, prompt_version, run_eval, save, table
+    from expcopilot.llm import MissingAPIKeyError, from_env
+
+    if not SCENARIOS.exists():
+        typer.echo("No scenarios; run `expc eval-build` first.", err=True)
+        raise typer.Exit(1)
+    scenarios = load_scenarios(SCENARIOS, split)[:limit]
+    try:
+        chosen = [CONFIGS[c.strip()] for c in configs.split(",") if c.strip()]
+    except KeyError as e:
+        raise typer.BadParameter(
+            f"unknown config {e.args[0]!r}; choose from {list(CONFIGS)}"
+        ) from None
+    try:
+        from_env("agent")
+    except MissingAPIKeyError as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(2) from None
+    store = Store(data_dir, read_only=True)
+    total = len(scenarios) * len(chosen) * runs
+    done = 0
+
+    def progress(rec: dict) -> None:
+        nonlocal done
+        done += 1
+        if done % 10 == 0 or done == total:
+            typer.echo(f"  {done}/{total} readouts", err=True)
+
+    typer.echo(
+        f"Running {total} readouts ({len(scenarios)} {split} scenarios x "
+        f"{len(chosen)} configs x {runs} runs)...",
+        err=True,
+    )
+    records = asyncio.run(
+        run_eval(
+            scenarios,
+            chosen,
+            runs,
+            store.data_dir,
+            lambda m: from_env("agent", model=m),
+            concurrency=concurrency,
+            use_judge=judge,
+            on_done=progress,
+        )
+    )
+    summary = aggregate(records, chosen, runs)
+    meta = {
+        "split": split,
+        "runs": runs,
+        "scenarios": len(scenarios),
+        "configs": [c.name for c in chosen],
+        "prompt_version": prompt_version(),
+        "judge": judge,
+    }
+    out = save(records, summary, meta, Path("evals/results"))
+    typer.echo(table(summary))
+    spent = sum(r["score"]["cost_usd"] for r in records if "score" in r) + sum(
+        s["judge_cost_usd"] for s in summary.values()
+    )
+    typer.echo(f"\nTotal spend ${spent:.3f}; results in {out}")
 
 
 @app.command("list")

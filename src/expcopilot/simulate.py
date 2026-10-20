@@ -388,7 +388,7 @@ def smoke_suite() -> list[SimulationSpec]:
     """
 
     def revenue_plan(n: int) -> PreRegisteredPlan:
-        return _plan("revenue", mde=0.15, planned_n_total=n)
+        return _plan("revenue", mde=0.15, planned_n_total=n, primary_covariate="pre_revenue")
 
     rps_plan = _plan(
         "revenue_per_session",
@@ -569,7 +569,13 @@ def smoke_suite() -> list[SimulationSpec]:
     ]
 
 
-SUITES: dict[str, Callable[[], list[SimulationSpec]]] = {"smoke": smoke_suite}
+def _eval_suite() -> list[SimulationSpec]:
+    from expcopilot.evals.suite import eval_suite  # imported lazily: evals depends on simulate
+
+    return eval_suite()
+
+
+SUITES: dict[str, Callable[[], list[SimulationSpec]]] = {"smoke": smoke_suite, "eval": _eval_suite}
 
 
 @dataclass(frozen=True)

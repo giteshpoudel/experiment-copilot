@@ -109,6 +109,12 @@ class DecisionRule(Model):
                    observed sample is below the plan's `planned_n_total`
     4. `dont_ship` otherwise
 
+    With several treatment arms, an arm qualifies if its primary p-value, adjusted with the
+    plan's method, is below alpha and the effect is on the good side; the best qualifying arm
+    whose guardrails pass is shipped. With planned interim looks, the primary counts as
+    significant only if the O'Brien-Fleming boundary was crossed at some look. If the plan names
+    a `primary_covariate`, the primary analysis uses CUPED with it.
+
     The fields are structured (not prose) so the Phase 5 oracle can apply the rule mechanically.
     """
 
@@ -120,8 +126,9 @@ class DecisionRule(Model):
     def describe(self) -> str:
         parts = [
             f"invalid if SRM p < {self.srm_alpha:g}",
-            "ship if the primary CI excludes zero on the good side and no guardrail shows "
-            "statistically significant harm",
+            "ship if the primary CI excludes zero on the good side (after multiple-testing "
+            "adjustment across arms; with interim looks, only if the O'Brien-Fleming boundary "
+            "was crossed) and no guardrail shows statistically significant harm",
         ]
         if self.extend_if_underpowered:
             parts.append("extend if inconclusive and n < planned n")
@@ -144,6 +151,9 @@ class PreRegisteredPlan(Model):
     planned_n_total: int = Field(gt=0)
     planned_looks: list[int] = Field(
         default_factory=list, description="Days (1-based) at which interim looks are planned"
+    )
+    primary_covariate: str | None = Field(
+        default=None, description="Pre-period covariate for CUPED on the primary metric"
     )
     decision_rule: DecisionRule = Field(default_factory=DecisionRule)
 
@@ -188,6 +198,9 @@ class Experiment(Model):
             raise ValueError(f"plan refers to undefined metrics: {missing}")
         if self.end_date < self.start_date:
             raise ValueError("end_date is before start_date")
+        cov = self.plan.primary_covariate
+        if cov is not None and cov not in self.covariates:
+            raise ValueError(f"plan's primary_covariate {cov!r} is not a covariate")
         return self
 
     @property

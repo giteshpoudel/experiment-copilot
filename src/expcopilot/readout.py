@@ -17,8 +17,8 @@ Process (use the tools in this order):
 1. describe_experiment: note the arms, the primary metric, guardrails, MDE, alpha, planned n
    and the pre-registered decision rule.
 2. check_srm: if it fails, the decision is INVALID; say so and stop analyzing effects.
-3. analyze_metric on the primary metric. Use cuped_covariate if the experiment has a
-   pre-period covariate for that metric (e.g. pre_revenue for revenue).
+3. analyze_metric on the primary metric. If the plan has a primary_covariate, pass it as
+   cuped_covariate (the plan pre-registers CUPED); otherwise don't use CUPED.
 4. analyze_metric on every guardrail metric; each comparison reports whether it passed.
 5. If there are several treatment arms, adjust_pvalues over the primary comparisons using the
    plan's multiple-testing method.
@@ -29,9 +29,12 @@ Process (use the tools in this order):
 DECISION_RULE = """\
 Decision: apply the plan's decision rule exactly, in order:
 - INVALID if the SRM check failed;
-- SHIP if the primary metric's CI excludes zero on the good side (direction = "better", after
-  any multiple-testing adjustment) and every guardrail passed (a guardrail fails only on
-  statistically significant harm, as reported by analyze_metric);
+- SHIP if the primary metric's CI excludes zero on the good side (direction = "better") and
+  every guardrail passed (a guardrail fails only on statistically significant harm, as
+  reported by analyze_metric). With several treatment arms, an arm qualifies only if its
+  adjusted p-value (adjust_pvalues, plan's method) is below alpha; ship the best qualifying arm
+  whose guardrails pass, and name it. With planned interim looks, the primary counts as
+  significant only if sequential_test (obrien_fleming) crossed its boundary;
 - EXTEND if the primary result is inconclusive and the observed n is below the planned n;
 - DON'T SHIP otherwise.
 Do not override the rule with your own judgement; put concerns (e.g. a decaying daily effect)

@@ -63,4 +63,5 @@ def run_baseline(experiment_id: str, llm: LLM, store: Store) -> Readout:
         truncated=False,
         finish_reason=resp.finish_reason,
         citation_issues=[] if decision else ["no '## Decision:' heading found"],
+        sources=[prompt],
     )

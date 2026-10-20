@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "split": "dev",
+    "runs": 1,
+    "scenarios": 3,
+    "configs": [
+      "agent",
+      "baseline"
+    ],
+    "prompt_version": "f4733c23",
+    "judge": true
+  },
+  "summary": {
+    "agent": {
+      "model": "deepseek-v4-pro",
+      "mode": "agent",
+      "runs": 1,
+      "errors": 0,
+      "judge_cost_usd": 0.0021,
+      "metrics": {
+        "decision_accuracy": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "truth_agreement": {
+          "mean": 0.6666666666666666,
+          "min": 0.6666666666666666,
+          "max": 0.6666666666666666
+        },
+        "false_ship_rate": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "method_choice": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "srm_recall": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "srm_false_alarm": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "grounding": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "unparsed_rate": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "judge_score": {
+          "mean": 4.888888888888889,
+          "min": 4.888888888888889,
+          "max": 4.888888888888889
+        },
+        "cost_usd": {
+          "mean": 0.01546,
+          "min": 0.01546,
+          "max": 0.01546
+        },
+        "latency_s": {
+          "mean": 22.971867138985544,
+          "min": 22.971867138985544,
+          "max": 22.971867138985544
+        }
+      }
+    },
+    "baseline": {
+      "model": "deepseek-v4-pro",
+      "mode": "baseline",
+      "runs": 1,
+      "errors": 0,
+      "judge_cost_usd": 0.0038,
+      "metrics": {
+        "decision_accuracy": {
+          "mean": 0.3333333333333333,
+          "min": 0.3333333333333333,
+          "max": 0.3333333333333333
+        },
+        "truth_agreement": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "false_ship_rate": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "method_choice": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "srm_recall": {
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "srm_false_alarm": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "grounding": {
+          "mean": 0.5541666666666667,
+          "min": 0.5541666666666667,
+          "max": 0.5541666666666667
+        },
+        "unparsed_rate": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "judge_score": {
+          "mean": 3.444444444444444,
+          "min": 3.444444444444444,
+          "max": 3.444444444444444
+        },
+        "cost_usd": {
+          "mean": 0.03935666666666667,
+          "min": 0.03935666666666667,
+          "max": 0.03935666666666667
+        },
+        "latency_s": {
+          "mean": 110.66750549990684,
+          "min": 110.66750549990684,
+          "max": 110.66750549990684
+        }
+      }
+    }
+  }
+}

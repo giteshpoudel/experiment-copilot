@@ -49,6 +49,7 @@ class TraceEntry:
     tool: str
     arguments: dict[str, Any] | str
     result_id: str | None
+    method: str | None
     summary: str
     is_error: bool
     latency_s: float
@@ -71,6 +72,7 @@ class Readout:
     finish_reason: str
     citation_issues: list[str]
     notes: list[str] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list, repr=False)  # text the model was given
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -122,6 +124,7 @@ async def run_agent(
     models_seen: list[str] = []
     notes: list[str] = []
     issued: dict[str, str] = {}
+    sources: list[str] = []
     n_calls, turns, truncated = 0, 0, False
     last: LLMResponse | None = None
 
@@ -160,28 +163,30 @@ async def run_agent(
                 if n_calls >= max_tool_calls:
                     content = "ERROR: tool-call budget exhausted; write the readout now."
                     entry = TraceEntry(
-                        turns,
-                        None,
-                        call.name,
-                        call.arguments or call.raw_arguments,
-                        None,
-                        "budget exhausted",
-                        True,
-                        0.0,
+                        step=turns,
+                        label=None,
+                        tool=call.name,
+                        arguments=call.arguments or call.raw_arguments,
+                        result_id=None,
+                        method=None,
+                        summary="budget exhausted",
+                        is_error=True,
+                        latency_s=0.0,
                     )
                 elif call.arguments is None:
                     content = (
                         f"ERROR: arguments were not a valid JSON object: {call.raw_arguments[:200]}"
                     )
                     entry = TraceEntry(
-                        turns,
-                        None,
-                        call.name,
-                        call.raw_arguments,
-                        None,
-                        "invalid JSON arguments",
-                        True,
-                        0.0,
+                        step=turns,
+                        label=None,
+                        tool=call.name,
+                        arguments=call.raw_arguments,
+                        result_id=None,
+                        method=None,
+                        summary="invalid JSON arguments",
+                        is_error=True,
+                        latency_s=0.0,
                     )
                 else:
                     n_calls += 1
@@ -190,14 +195,15 @@ async def run_agent(
                         msg = res.content[0].text if res.content else "tool error"
                         content = f"ERROR: {msg}"
                         entry = TraceEntry(
-                            turns,
-                            None,
-                            call.name,
-                            call.arguments,
-                            None,
-                            msg,
-                            True,
-                            time.perf_counter() - t0,
+                            step=turns,
+                            label=None,
+                            tool=call.name,
+                            arguments=call.arguments,
+                            result_id=None,
+                            method=None,
+                            summary=msg,
+                            is_error=True,
+                            latency_s=time.perf_counter() - t0,
                         )
                     else:
                         label = f"r{len(issued) + 1}"
@@ -209,15 +215,17 @@ async def run_agent(
                             body = body[:MAX_RESULT_CHARS] + " ...(truncated)"
                             notes.append(f"{label} ({call.name}) result truncated for the model")
                         content = f"[{label}] {call.name} result_id={rid}\n{body}"
+                        sources.append(content)
                         entry = TraceEntry(
-                            turns,
-                            label,
-                            call.name,
-                            call.arguments,
-                            rid,
-                            _summary_of(data),
-                            False,
-                            time.perf_counter() - t0,
+                            step=turns,
+                            label=label,
+                            tool=call.name,
+                            arguments=call.arguments,
+                            result_id=rid,
+                            method=data.get("method"),
+                            summary=_summary_of(data),
+                            is_error=False,
+                            latency_s=time.perf_counter() - t0,
                         )
                 trace.append(entry)
                 messages.append({"role": "tool", "tool_call_id": call.id, "content": content})
@@ -244,4 +252,5 @@ async def run_agent(
         finish_reason=last.finish_reason,
         citation_issues=issues,
         notes=notes,
+        sources=sources,
     )
