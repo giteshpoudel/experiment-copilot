@@ -219,3 +219,47 @@ Running log for the README's "what the evals caught" section. Newest last.
 - Effect on smoke-03: bounce +3.45% (CI −0.124% to +7.03%) is now a pass, so its decision under
   the rule is SHIP. The saved Phase 4 readout (`results/readouts/smoke-03-agent.json`) predates
   this change and shows DON'T SHIP.
+
+## Phase 5: evals (2026-10-20)
+
+### Setup
+
+- 80 scenarios (`evals/scenarios.jsonl`), 40 dev / 40 test, stratified by knob. Labels come
+  from a deterministic oracle that applies the pre-registered rule using the same validated
+  `Analyzer`, plus truth labels from the simulator. A slow test checks that the labels
+  regenerate identically from the seeds; `eval-build` refuses to overwrite them.
+- Rule clarifications made before any eval run (so the oracle is unambiguous): the plan
+  pre-registers the CUPED covariate (`primary_covariate`); with planned looks, the primary is
+  significant only if the O'Brien-Fleming boundary was crossed; with several arms, an arm
+  qualifies on its Holm-adjusted p and the best qualifying arm with passing guardrails ships.
+- Oracle vs truth disagree on 10/80 for known reasons: 5 power misses (true effect at or
+  below the MDE, not significant), 3 novelty false ships, 1 small guardrail harm missed by the
+  significant-harm rule, 1 small effect.
+- Configs: `agent` (deepseek-v4-pro), `baseline` (same model, plan plus per-arm means only),
+  `agent-flash` (deepseek-flash). 3 runs each. Judge: flash for the Pro configs, Pro for the
+  Flash config.
+
+### Dev split (40 scenarios x 3 configs x 3 runs, off-peak, $4.37, 28 min)
+
+- Agent (V4-Pro): 100% decision accuracy vs oracle, 100% required checks, 99% grounded, judge
+  4.7, $0.0066 and 34 s per readout. Flash agent: also 100% / 100%, 97% grounded, $0.0016, 19 s.
+  No prompt changes were made after dev, so no dev rerun.
+- Baseline: 71% (68–75%) decision accuracy, 49% grounded, 5% unparseable decisions, $0.0197 and
+  102 s per readout. Its misses are mostly "don't ship" where the oracle ships, concentrated
+  in the CUPED revenue scenarios: without covariate data it cannot use CUPED, so its own
+  arithmetic is underpowered.
+- The agent's only false ships were the two dev novelty scenarios (e052, e053), as designed:
+  the rule says ship. It ran `daily_effects` and discussed novelty in every one.
+
+### Found during dev review
+
+- **The daily trend test is underpowered for mild novelty (open).** In e053 (initial +30%,
+  half-life 3 days) the test reports p = 0.29, "no significant downward trend", with about 100
+  conversions per arm per day. The agent quoted that faithfully; the judge, which knows the
+  scenario has novelty, scored its caveats 2/5. It's the guardrail lesson again: "not
+  significant" is not "no effect". Options: say in the tool output that the test has low power
+  at this volume; compare first-half vs second-half effects; or fit a decay curve. Not changed
+  mid-eval, so dev and test stay comparable.
+- **Grounding misses are mostly harmless format conversions** in the agent ("50/50 split" from
+  shares of 0.5, "80% power" from 0.8). The scorer is deliberately strict; these are left as
+  ungrounded.
