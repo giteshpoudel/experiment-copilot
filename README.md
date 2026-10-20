@@ -1,33 +1,209 @@
 # Experimentation Copilot
 
-An MCP server that gives any AI client a toolkit for analyzing A/B tests, plus an agent that writes
-cited ship / don't-ship readouts, measured against simulated experiments with known true effects.
+**An MCP server that lets an AI assistant analyze A/B tests with validated statistics, and an
+eval harness that measures whether it actually reaches the right ship decision.**
 
-See [PROJECT_PLAN.md](PROJECT_PLAN.md) for scope and phases. Status: Phases 1–3 done (store and
-simulator, validated statistics engine, MCP server). Next: the readout agent.
+Ask *"Should we ship checkout-redesign?"* and the assistant checks the traffic split, picks the
+right test for each metric, applies the decision rule the team pre-registered, and writes a
+readout in which every number links back to the tool result it came from.
 
-## Quick start
+> **The core rule:** numbers come from tools. The model chooses methods and explains them; it
+> never computes, rounds or converts a number itself.
+
+---
+
+## Why build it this way
+
+Language models are good at explaining experiments and unreliable at doing the statistics.
+Given only a summary table, a strong model will compute standard errors in its head, compare a
+relative margin against an absolute difference, or call a result significant after two weeks
+of daily peeking. Each of these looks plausible and leads to a wrong decision.
+
+So the statistics live in a server the model can call but cannot second-guess:
+
+- **Tools take experiment ids and metric names, never raw data.** Data stays in the store and
+  results come back small and typed.
+- **Every result carries a stable `result_id`** and a pre-formatted summary
+  (`+11.6% (95% CI +4.18% to +19%), p = 0.0012`) that the model quotes verbatim.
+- **The decision rule is data, not taste.** Each experiment has a pre-registered plan (primary
+  metric, guardrails, MDE, alpha, planned n, interim looks, CUPED covariate), and the readout
+  must follow it.
+- **The tools are read-only.** The server cannot create, change or stop experiments.
+
+## How it works
+
+```mermaid
+flowchart LR
+    U([Question]) --> A[Readout agent<br/>LLM + tool loop]
+    A <-->|MCP over stdio| S[experimentation server]
+    S --> E[Statistics engine<br/>pure Python, validated]
+    S --> D[(DuckDB registry<br/>+ Parquet units)]
+    A --> R([Readout with citations<br/>and tool trace])
+    T[(Ground truth<br/>separate store)] -.->|evals only| V[Oracle + scorer]
+    R --> V
+```
+
+A typical readout runs `describe_experiment` → `check_srm` → `analyze_metric` (primary, then
+guardrails) → `adjust_pvalues` when there are several arms → `sequential_test` or
+`daily_effects` when the design calls for them. The agent labels each result `[r1]`, `[r2]` …
+and the trace maps every label to the tool, its inputs and the server's `result_id`.
+
+<details>
+<summary>Example: a readout the agent wrote (abridged)</summary>
+
+```
+## Decision: INVALID
+
+## Validity checks (SRM, peeking, novelty)
+- SRM: FAILED. Observed split was control 51.27% / treatment 48.73%; chi2 = 18.79,
+  p < 0.0001, below the plan's SRM alpha of 0.001 [r2]. The experiment is not trustworthy.
+
+Tool trace:
+  [r1] describe_experiment(experiment_id=smoke-15)  r-953b2be2
+  [r2] check_srm(experiment_id=smoke-15)            r-1f9a16c0
+
+3 turns, 2 tool calls; 12,389 prompt tokens (7,936 cached); $0.0049; 12 s
+```
+</details>
+
+## What the server offers
+
+| Tool | Answers |
+| --- | --- |
+| `describe_experiment`, `list_experiments` | Arms, metrics, covariates and the pre-registered plan |
+| `check_srm` | Is the traffic split what was planned? (A planned 80/20 split is not an SRM.) |
+| `analyze_metric` | Effect, CI, p-value: two-proportion z, Welch, delta method for ratio metrics, bootstrap, CUPED. Includes guardrail verdicts. |
+| `adjust_pvalues` | Holm or Benjamini-Hochberg across arms or metrics |
+| `sequential_test` | Valid results after peeking: O'Brien-Fleming alpha spending, mSPRT |
+| `daily_effects` | Effect by day plus a decay test, for novelty effects |
+| `segment_effects` | Effects by segment, adjusted and flagged as exploratory |
+| `bayesian_ab` | P(treatment better), credible intervals, expected loss |
+| `power_analysis` | Sample size for an MDE, or the MDE for a sample size |
+| `calculate` | Exact arithmetic with its own citable id, so prose never does math |
+
+It also offers resources (`experiments://registry`, `experiments://{id}/plan`,
+`metrics://definitions`) and an `experiment_readout` prompt. It works from any MCP client:
+Claude Code, Claude Desktop, the MCP Inspector, or the agent in this repo.
+
+## The statistics are tested, then validated
+
+Every method is first checked against SciPy or statsmodels on fixed inputs: the z-test and
+Welch to 1e-9, the delta method against WLS with cluster-robust errors, CUPED against ANCOVA,
+and O'Brien-Fleming boundaries against published tables. Then it is validated by simulation
+over thousands of A/A and A/B experiments with known true effects
+([`results/validation.json`](results/validation.json)):
+
+| Check | Target | Result |
+| --- | --- | --- |
+| 95% CI coverage: z, Welch, delta method, CUPED | 95% | 94.1–94.8% |
+| A/A false-positive rate | 5% | 4.5–4.9% |
+| False positives with 14 daily peeks: naive / O'Brien-Fleming / mSPRT | ≤ 5% | 22.3% / 4.75% / 0.35% |
+| CUPED CI width vs Welch at ρ = 0.5 / 0.9 | √(1 − r²) | 0.935× / 0.607× |
+
+## Evals: does the agent make the right call?
+
+80 simulated experiments, split 40 dev / 40 test, cover every failure mode the simulator can
+inject: null, small, MDE-sized, large and negative effects on binary, skewed-revenue and ratio
+metrics; CUPED at three covariate strengths; sample-ratio mismatches, plus planned unequal splits
+that must *not* be flagged; novelty effects that fade; large and small guardrail harms;
+pre-registered interim looks; four-arm tests; and experiments stopped short of their planned
+size. Names and ids are neutral, so nothing the model sees hints at the answer.
+
+Each scenario has **two answer keys**:
+
+- **Oracle**: a deterministic, correct analysis that applies the pre-registered rule. This
+  measures *did the agent follow the plan?*
+- **Truth**: the simulator's known effects. This measures *was the plan's answer actually
+  right?* A perfectly rule-following agent still ships a novelty effect whose true lift is zero.
+
+Scores are deterministic wherever possible:
+
+- decision accuracy against the oracle
+- agreement with the true effect, and the false-ship rate
+- required checks read from the tool trace (delta method on ratio metrics, Holm with several
+  arms, a sequential test when looks were planned)
+- SRM detection and false alarms
+- number grounding: the share of numbers in the readout that appear verbatim in a tool result
+
+A separate model judges only the quality of the explanation. Every configuration runs three
+times, and results are reported as the mean with the range across runs.
+
+<!-- EVAL_RESULTS -->
+
+## What the evals and tests caught
+
+Some of the most useful output of this project was finding mistakes, including my own:
+
+- **The no-tools baseline misread a margin's units.** Given counts and means, it computed its own
+  SEs and CIs, then compared a guardrail's *absolute* CI bound (0.0206) against the plan's
+  *relative* 5% margin. That turned a failing guardrail into "ship". The agent never has to
+  handle margin units: the tool returns the verdict.
+- **A spending-function bug that passed a total-α check.** The first O'Brien-Fleming
+  implementation spent exactly α overall (the multivariate-normal check passed), but it used the
+  one-sided formula, which front-loads α. Only the comparison with published boundaries caught
+  it: the first look's boundary was 4.38 instead of 4.88.
+- **A covariate knob that did nothing.** The simulator's CUPED setting barely moved the
+  correlation (0.04 at ρ = 0.5), because conversion and spend came from different latent
+  variables. Fixing it needed a closed-form revenue scaling to keep the true effects exact.
+- **A guardrail rule that blocked harmless changes.** A 5% non-inferiority margin failed about
+  1 in 5 changes with zero true harm at the planned sample sizes. Guardrails now fail only on
+  statistically significant harm, and the eval includes small real harms to measure what that
+  rule misses.
+- **Pre-registration gaps.** Whether to use CUPED, and which test applies after planned looks,
+  could each flip a significance call. Both are now part of the plan, so the oracle is
+  unambiguous.
+
+The full log is in [`NOTES.md`](NOTES.md).
+
+## Tech stack
+
+| Layer | Choice |
+| --- | --- |
+| Language | Python 3.11, type hints throughout, Pydantic v2 for every tool input and output |
+| MCP server | [FastMCP](https://github.com/PrefectHQ/fastmcp) 4 (stdio), tested with its in-memory client |
+| Storage | DuckDB registry over per-experiment Parquet; ground truth in a separate database the server never opens |
+| Statistics | NumPy, SciPy, statsmodels; group-sequential boundaries by numerical integration |
+| LLM | DeepSeek V4-Pro (agent) and V4.1-Flash (judge) through the OpenAI SDK, behind a small provider-neutral interface |
+| CLI and tests | Typer, pytest (offline tests use a scripted fake LLM), ruff |
+
+## Layout
+
+```
+src/expcopilot/
+  stats/          pure statistics engine (no I/O, no LLM)
+  analysis.py     loads data, picks methods, returns typed results
+  server.py       MCP tools, resources and prompt
+  agent.py        MCP client + capped tool loop, citations, trace
+  baseline.py     the same model with only a summary table
+  simulate.py     experiments with known truth
+  evals/          suite, oracle, scoring, judge, runner
+evals/scenarios.jsonl   labelled scenarios (never edited after creation)
+results/                validation numbers, example readouts
+```
+
+## Running it
+
+<details>
+<summary>Setup and commands</summary>
 
 ```bash
 python3.11 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-expc simulate --suite smoke      # 20 simulated experiments with known truth
-expc list
-expc describe smoke-15
-expc validate                    # statistics validation -> results/validation.json
-pytest -m "not slow"
+cp .env.example .env            # add an OpenAI-compatible API key (DeepSeek by default)
+
+expc simulate --suite smoke     # 20 simulated experiments
+expc describe smoke-15          # the pre-registered plan
+expc validate                   # statistics validation -> results/validation.json
+expc readout smoke-15           # agent readout with tool trace
+expc readout smoke-15 --no-tools  # baseline
+expc eval --split dev           # evals (costs a few dollars; see the cost line)
+pytest -m "not slow"            # offline tests, no API calls
 ```
 
-## Use it from Claude Code or Claude Desktop
+**From Claude Code:** the repo ships a project [`.mcp.json`](.mcp.json). Run `claude` here, approve
+the server, and ask *"Should we ship smoke-15?"*
 
-The server is read-only and talks MCP over stdio: `expc serve`.
-
-**Claude Code:** this repo ships a project [`.mcp.json`](.mcp.json). Run `claude` in the repo
-folder and approve the `experiment-copilot` server when asked. Then try:
-
-> Should we ship smoke-15? Use the experiment-copilot tools and the experiment_readout prompt.
-
-**Claude Desktop:** add this to `claude_desktop_config.json` (absolute paths required):
+**From Claude Desktop:** add to `claude_desktop_config.json`:
 
 ```json
 {
@@ -39,34 +215,15 @@ folder and approve the `experiment-copilot` server when asked. Then try:
   }
 }
 ```
+</details>
 
-**MCP Inspector:** `npx @modelcontextprotocol/inspector .venv/bin/expc serve`
+## Limitations
 
-### Tools
-
-| Tool | What it answers |
-| --- | --- |
-| `list_experiments`, `describe_experiment` | What's in the store; arms, metrics and the pre-registered plan |
-| `check_srm` | Is the traffic split what was planned? |
-| `analyze_metric` | Effect, CI and p-value (z-test, Welch, delta method, bootstrap, CUPED); guardrail verdicts |
-| `adjust_pvalues` | Holm / Benjamini-Hochberg across arms or metrics |
-| `sequential_test` | Valid results after peeking (O'Brien-Fleming spending, mSPRT) |
-| `daily_effects` | Effect by day and a novelty-decay test |
-| `segment_effects` | Exploratory effects by segment |
-| `bayesian_ab` | P(treatment better), expected loss |
-| `power_analysis` | Sample size or MDE |
-| `calculate` | Exact arithmetic, so prose never does math |
-
-Resources: `experiments://registry`, `experiments://{id}/plan`, `metrics://definitions`.
-Prompt: `experiment_readout(experiment_id)`.
-
-## Validation
-
-Measured on thousands of simulated experiments; see `results/validation.json`.
-
-| Check | Result |
-| --- | --- |
-| 95% CI coverage (z, Welch, delta, CUPED) | 94.1–94.8% |
-| A/A false-positive rate | 4.5–4.9% |
-| 14 daily peeks: naive / O'Brien-Fleming / mSPRT | 22.3% / 4.75% / 0.35% |
-| CUPED CI width at ρ = 0.5 / 0.9 | 0.935× / 0.607× |
+- **Simulated data so far.** Case studies on the public Hillstrom email test and the Criteo
+  uplift dataset are next.
+- **No interference.** Units are assumed independent: no network or marketplace effects and
+  no long-term holdouts.
+- **The judge comes from the same lab as the agent.** It only scores explanation quality;
+  decisions and grounding are scored deterministically.
+- **Runs vary.** The model's thinking mode ignores temperature, which is why every config runs
+  three times and reports its range.
