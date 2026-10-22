@@ -1,0 +1,88 @@
+{
+  "experiment_id": "smoke-10",
+  "mode": "agent",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: DON'T SHIP\n\n## Primary result\n- **revenue_per_session** (primary, ratio): treatment vs control **+11.4% (95% CI -0.0615% to +24%), p = 0.051; absolute +0.224 (1.966 -> 2.19); inconclusive** [r3].\n- The CI includes zero, so the primary result does not meet the ship criterion (CI excludes zero on the good side).\n\n## Guardrails\n- **bounce** (guardrail, higher is worse): treatment vs control **-2.2% (95% CI -5.34% to +1.03%), p = 0.18; absolute -0.006669 (0.3025 -> 0.2959); guardrail passed (no statistically significant harm)** [r4].\n\n## Validity checks (SRM, peeking, novelty)\n- **SRM passed**: observed split control 50.32% / treatment 49.68%; chi2 = 1.372, p = 0.24 [r2].\n- **Peeking**: no planned interim looks [r1].\n- **Novelty**: no daily data available (has_daily = false) [r1], so a daily decay/novelty check could not be run.\n- **Multiple testing**: one treatment arm, so no adjustment was needed.\n\n## Caveats\n- The primary result is inconclusive but observed n_total is 34,000 [r1], which equals the planned n_total of 34,000 [r1]. Therefore the EXTEND path (inconclusive and n < planned n) does not apply.\n- The point estimate is positive and the CI nearly excludes zero, but the pre-registered decision rule requires the primary CI to exclude zero; it does not.\n\n## Exploratory findings\n- None run (segment_effects was optional and not used for this decision).",
+  "decision": "dont_ship",
+  "trace": [
+    {
+      "step": 1,
+      "label": "r1",
+      "tool": "describe_experiment",
+      "arguments": {
+        "experiment_id": "smoke-10"
+      },
+      "result_id": "r-a85f2e12",
+      "method": "registry_lookup",
+      "summary": "smoke-10 'infinite-scroll': 2 arms, 34,000 units. Primary revenue_per_session (MDE 15% relative, alpha 0.05); guardrails: bounce; planned n 34,000.",
+      "is_error": false,
+      "latency_s": 0.11493570823222399
+    },
+    {
+      "step": 2,
+      "label": "r2",
+      "tool": "check_srm",
+      "arguments": {
+        "experiment_id": "smoke-10"
+      },
+      "result_id": "r-642422de",
+      "method": "chi_square_goodness_of_fit",
+      "summary": "Observed split control 50.32% / treatment 49.68%; chi2 = 1.372, p = 0.24; SRM check passed.",
+      "is_error": false,
+      "latency_s": 0.05112233432009816
+    },
+    {
+      "step": 3,
+      "label": "r3",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "smoke-10",
+        "metric": "revenue_per_session"
+      },
+      "result_id": "r-b35020f1",
+      "method": "delta_method",
+      "summary": "treatment vs control: +11.4% (95% CI -0.0615% to +24%), p = 0.051; absolute +0.224 (1.966 -> 2.19); inconclusive",
+      "is_error": false,
+      "latency_s": 0.022985707968473434
+    },
+    {
+      "step": 4,
+      "label": "r4",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "smoke-10",
+        "metric": "bounce"
+      },
+      "result_id": "r-2003c67f",
+      "method": "two_proportion_z",
+      "summary": "treatment vs control: -2.2% (95% CI -5.34% to +1.03%), p = 0.18; absolute -0.006669 (0.3025 -> 0.2959); inconclusive; guardrail passed (no statistically significant harm)",
+      "is_error": false,
+      "latency_s": 0.022172666620463133
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 25336,
+    "cache_hit_tokens": 22272,
+    "cache_miss_tokens": 3064,
+    "output_tokens": 2681,
+    "reasoning_tokens": 2035,
+    "cost_usd": 0.007821,
+    "requests": 5
+  },
+  "latency_s": 28.021106792148203,
+  "turns": 5,
+  "tool_calls": 4,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": [],
+  "sources": [
+    "[r1] describe_experiment result_id=r-a85f2e12\n{\"result_id\":\"r-a85f2e12\",\"method\":\"registry_lookup\",\"inputs\":{\"experiment_id\":\"smoke-10\"},\"experiment_id\":\"smoke-10\",\"name\":\"infinite-scroll\",\"description\":\"Infinite scroll on category pages.\",\"status\":\"complete\",\"unit\":\"user\",\"start_date\":\"2026-09-01\",\"end_date\":\"2026-09-14\",\"has_daily\":false,\"arms\":[{\"name\":\"control\",\"is_control\":true,\"expected_share\":0.5,\"observed_n\":17108},{\"name\":\"treatment\",\"is_control\":false,\"expected_share\":0.5,\"observed_n\":16892}],\"n_total\":34000,\"metrics\":[{\"name\":\"conversion\",\"type\":\"binary\",\"higher_is_better\":true,\"columns\":[\"converted\"],\"default_method\":\"two_proportion_z\",\"description\":\"Unit made at least one purchase during the experiment\"},{\"name\":\"revenue\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"revenue\"],\"default_method\":\"welch_t\",\"description\":\"Revenue per unit over the experiment (zero for non-buyers; skewed)\"},{\"name\":\"sessions\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"sessions\"],\"default_method\":\"welch_t\",\"description\":\"Sessions per unit over the experiment\"},{\"name\":\"revenue_per_session\",\"type\":\"ratio\",\"higher_is_better\":true,\"columns\":[\"revenue\",\"sessions\"],\"default_method\":\"delta_method\",\"description\":\"Total revenue / total sessions (ratio metric; unit is the user)\"},{\"name\":\"bounce\",\"type\":\"binary\",\"higher_is_better\":false,\"columns\":[\"bounced\"],\"default_method\":\"two_proportion_z\",\"description\":\"Unit's first session ended without a second page view\"}],\"covariates\":[\"pre_revenue\",\"pre_sessions\"],\"segments\":[\"platform\",\"region\",\"new_user\"],\"plan\":{\"primary_metric\":\"revenue_per_session\",\"secondary_metrics\":[\"conversion\",\"sessions\"],\"guardrails\":[{\"metric\":\"bounce\"}],\"baseline\":2.0630063862901324,\"mde\":0.15,\"alpha\":0.05,\"power\":0.8,\"sides\":2,\"multiple_testing\":\"holm\",\"planned_n_total\":34000,\"planned_looks\":[],\"primary_covariate\":null,\"decision_rule\":{\"srm_alpha\":0.001,\"ship_requires\":\"primary_ci_excludes_zero\",\"guardrail_check\":\"no_significant_harm\",\"extend_if_underpowered\":true}},\"decision_rule_text\":\"invalid if SRM p < 0.001; ship if the primary CI excludes zero on the good side (after multiple-testing adjustment across arms; with interim looks, only if the O'Brien-Fleming boundary was crossed) and no guardrail shows statistically significant harm; extend if inconclusive and n < planned n; otherwise don't ship\",\"summary\":\"smoke-10 'infinite-scroll': 2 arms, 34,000 units. Primary revenue_per_session (MDE 15% relative, alpha 0.05); guardrails: bounce; planned n 34,000.\"}",
+    "[r2] check_srm result_id=r-642422de\n{\"result_id\":\"r-642422de\",\"method\":\"chi_square_goodness_of_fit\",\"inputs\":{\"experiment_id\":\"smoke-10\"},\"experiment_id\":\"smoke-10\",\"arms\":[{\"arm\":\"control\",\"expected_share\":0.5,\"observed_share\":0.503176,\"observed\":17108,\"expected\":17000.0},{\"arm\":\"treatment\",\"expected_share\":0.5,\"observed_share\":0.496824,\"observed\":16892,\"expected\":17000.0}],\"chi2\":1.37224,\"df\":1,\"p_value\":0.241428,\"alpha\":0.001,\"passed\":true,\"summary\":\"Observed split control 50.32% / treatment 49.68%; chi2 = 1.372, p = 0.24; SRM check passed.\"}",
+    "[r3] analyze_metric result_id=r-b35020f1\n{\"result_id\":\"r-b35020f1\",\"method\":\"delta_method\",\"inputs\":{\"experiment_id\":\"smoke-10\",\"metric\":\"revenue_per_session\",\"method\":\"auto\",\"cuped_covariate\":null,\"arms\":[\"treatment\"]},\"experiment_id\":\"smoke-10\",\"metric\":\"revenue_per_session\",\"metric_type\":\"ratio\",\"role\":\"primary\",\"alpha\":0.05,\"cuped_covariate\":null,\"comparisons\":[{\"result_id\":\"r-b35020f1.treatment\",\"arm\":\"treatment\",\"control\":\"control\",\"n_control\":17108,\"n_treatment\":16892,\"mean_control\":1.96613,\"mean_treatment\":2.19008,\"abs_effect\":0.223952,\"abs_ci\":{\"low\":-0.00126171,\"high\":0.449166},\"rel_effect\":0.113905,\"rel_ci\":{\"low\":-0.000614892,\"high\":0.23962},\"p_value\":0.0512974,\"significant\":false,\"direction\":\"inconclusive\",\"variance_reduction\":null,\"guardrail\":null,\"summary\":\"treatment vs control: +11.4% (95% CI -0.0615% to +24%), p = 0.051; absolute +0.224 (1.966 -> 2.19); inconclusive\"}],\"notes\":[\"Ratio metric: delta method on per-unit numerator and denominator sums.\"]}",
+    "[r4] analyze_metric result_id=r-2003c67f\n{\"result_id\":\"r-2003c67f\",\"method\":\"two_proportion_z\",\"inputs\":{\"experiment_id\":\"smoke-10\",\"metric\":\"bounce\",\"method\":\"auto\",\"cuped_covariate\":null,\"arms\":[\"treatment\"]},\"experiment_id\":\"smoke-10\",\"metric\":\"bounce\",\"metric_type\":\"binary\",\"role\":\"guardrail\",\"alpha\":0.05,\"cuped_covariate\":null,\"comparisons\":[{\"result_id\":\"r-2003c67f.treatment\",\"arm\":\"treatment\",\"control\":\"control\",\"n_control\":17108,\"n_treatment\":16892,\"mean_control\":0.302549,\"mean_treatment\":0.29588,\"abs_effect\":-0.00666881,\"abs_ci\":{\"low\":-0.0164032,\"high\":0.00306563},\"rel_effect\":-0.0220421,\"rel_ci\":{\"low\":-0.0533701,\"high\":0.0102988},\"p_value\":0.179363,\"significant\":false,\"direction\":\"inconclusive\",\"variance_reduction\":null,\"guardrail\":{\"rule\":\"no_significant_harm\",\"passed\":true},\"summary\":\"treatment vs control: -2.2% (95% CI -5.34% to +1.03%), p = 0.18; absolute -0.006669 (0.3025 -> 0.2959); inconclusive; guardrail passed (no statistically significant harm)\"}],\"notes\":[]}"
+  ]
+}

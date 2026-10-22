@@ -1,0 +1,119 @@
+{
+  "experiment_id": "smoke-16",
+  "mode": "agent",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: SHIP\n\nShip the **treatment** arm. The primary metric's CI excludes zero on the good side, the bounce guardrail passed, SRM passed, and there are no planned interim looks. Only one treatment arm, so the plan's Holm adjustment is not triggered.\n\n## Primary result\n\nPlan context: 2 arms (control n=14,911, treatment n=15,089), primary metric **conversion** (MDE 10% relative, alpha 0.05), guardrail **bounce**, planned n 30,000 [r1].\n\n- conversion: treatment vs control **+13.3% (95% CI +6.07% to +21.1%), p = 0.00021; absolute +0.01315 (0.09885 -> 0.112); better** [r3].\n\n## Guardrails\n\n- bounce: treatment vs control **-0.101% (95% CI -3.49% to +3.41%), p = 0.95; guardrail passed (no statistically significant harm)** [r4].\n\n## Validity checks (SRM, peeking, novelty)\n\n- SRM: **observed split control 49.7% / treatment 50.3%; chi2 = 1.056, p = 0.3; SRM check passed** [r2].\n- Peeking/interim: no planned interim looks [r1], so sequential testing is not required.\n- Novelty: **conversion by day (treatment vs control): day 1 +48.8%, day 14 +6.57%; trend -3.29 percentage points of lift per day, p = 0.011: the effect shrinks over time (novelty pattern)** [r5].\n\n## Caveats\n\n- The daily effect shows a statistically significant decay/novelty pattern, so the overall lift may overstate the longer-run benefit [r5]. This does not override the pre-registered ship rule.\n- Only one guardrail was pre-registered; other potential harm metrics are not covered.\n\n## Exploratory findings\n\n- platform segment (exploratory, not part of the decision): no evidence the effect differs by platform (Cochran's Q p = 0.52). android **+8.23% (-3.41% to +21.3%), p = 0.17 adjusted**; ios **+14.9% (+4.24% to +26.7%), p = 0.015 adjusted**; web **+18.6% (+2.33% to +37.7%), p = 0.047 adjusted** [r6].",
+  "decision": "ship",
+  "trace": [
+    {
+      "step": 1,
+      "label": "r1",
+      "tool": "describe_experiment",
+      "arguments": {
+        "experiment_id": "smoke-16"
+      },
+      "result_id": "r-777205c1",
+      "method": "registry_lookup",
+      "summary": "smoke-16 'homepage-redesign': 2 arms, 30,000 units. Primary conversion (MDE 10% relative, alpha 0.05); guardrails: bounce; planned n 30,000.",
+      "is_error": false,
+      "latency_s": 0.11508395802229643
+    },
+    {
+      "step": 2,
+      "label": "r2",
+      "tool": "check_srm",
+      "arguments": {
+        "experiment_id": "smoke-16"
+      },
+      "result_id": "r-84ccd05d",
+      "method": "chi_square_goodness_of_fit",
+      "summary": "Observed split control 49.7% / treatment 50.3%; chi2 = 1.056, p = 0.3; SRM check passed.",
+      "is_error": false,
+      "latency_s": 0.034954583272337914
+    },
+    {
+      "step": 3,
+      "label": "r3",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "smoke-16",
+        "metric": "conversion"
+      },
+      "result_id": "r-61bb4350",
+      "method": "two_proportion_z",
+      "summary": "treatment vs control: +13.3% (95% CI +6.07% to +21.1%), p = 0.00021; absolute +0.01315 (0.09885 -> 0.112); better",
+      "is_error": false,
+      "latency_s": 0.039473749697208405
+    },
+    {
+      "step": 4,
+      "label": "r4",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "smoke-16",
+        "metric": "bounce"
+      },
+      "result_id": "r-18b7021e",
+      "method": "two_proportion_z",
+      "summary": "treatment vs control: -0.101% (95% CI -3.49% to +3.41%), p = 0.95; absolute -0.0003048 (0.3011 -> 0.3008); inconclusive; guardrail passed (no statistically significant harm)",
+      "is_error": false,
+      "latency_s": 0.021932167001068592
+    },
+    {
+      "step": 5,
+      "label": "r5",
+      "tool": "daily_effects",
+      "arguments": {
+        "experiment_id": "smoke-16",
+        "metric": "conversion"
+      },
+      "result_id": "r-8074e975",
+      "method": "wls_trend_on_daily_relative_effect",
+      "summary": "conversion by day (treatment vs control): day 1 +48.8%, day 14 +6.57%; trend -3.29 percentage points of lift per day, p = 0.011: the effect shrinks over time (novelty pattern).",
+      "is_error": false,
+      "latency_s": 0.06793700018897653
+    },
+    {
+      "step": 6,
+      "label": "r6",
+      "tool": "segment_effects",
+      "arguments": {
+        "experiment_id": "smoke-16",
+        "metric": "conversion",
+        "segment": "platform"
+      },
+      "result_id": "r-3b9ccd51",
+      "method": "per_segment_two_proportion_z_holm_adjusted",
+      "summary": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.52: no evidence the effect differs across levels. platform=android: +8.23% (-3.41% to +21.3%), p = 0.17 adjusted; platform=ios: +14.9% (+4.24% to +26.7%), p = 0.015 adjusted; platform=web: +18.6% (+2.33% to +37.7%), p = 0.047 adjusted",
+      "is_error": false,
+      "latency_s": 0.03786649974063039
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 39588,
+    "cache_hit_tokens": 35200,
+    "cache_miss_tokens": 4388,
+    "output_tokens": 3350,
+    "reasoning_tokens": 2405,
+    "cost_usd": 0.010303,
+    "requests": 7
+  },
+  "latency_s": 34.23042462486774,
+  "turns": 7,
+  "tool_calls": 6,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": [],
+  "sources": [
+    "[r1] describe_experiment result_id=r-777205c1\n{\"result_id\":\"r-777205c1\",\"method\":\"registry_lookup\",\"inputs\":{\"experiment_id\":\"smoke-16\"},\"experiment_id\":\"smoke-16\",\"name\":\"homepage-redesign\",\"description\":\"Redesigned homepage hero and navigation.\",\"status\":\"complete\",\"unit\":\"user\",\"start_date\":\"2026-09-01\",\"end_date\":\"2026-09-14\",\"has_daily\":true,\"arms\":[{\"name\":\"control\",\"is_control\":true,\"expected_share\":0.5,\"observed_n\":14911},{\"name\":\"treatment\",\"is_control\":false,\"expected_share\":0.5,\"observed_n\":15089}],\"n_total\":30000,\"metrics\":[{\"name\":\"conversion\",\"type\":\"binary\",\"higher_is_better\":true,\"columns\":[\"converted\"],\"default_method\":\"two_proportion_z\",\"description\":\"Unit made at least one purchase during the experiment\"},{\"name\":\"revenue\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"revenue\"],\"default_method\":\"welch_t\",\"description\":\"Revenue per unit over the experiment (zero for non-buyers; skewed)\"},{\"name\":\"sessions\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"sessions\"],\"default_method\":\"welch_t\",\"description\":\"Sessions per unit over the experiment\"},{\"name\":\"revenue_per_session\",\"type\":\"ratio\",\"higher_is_better\":true,\"columns\":[\"revenue\",\"sessions\"],\"default_method\":\"delta_method\",\"description\":\"Total revenue / total sessions (ratio metric; unit is the user)\"},{\"name\":\"bounce\",\"type\":\"binary\",\"higher_is_better\":false,\"columns\":[\"bounced\"],\"default_method\":\"two_proportion_z\",\"description\":\"Unit's first session ended without a second page view\"}],\"covariates\":[\"pre_revenue\",\"pre_sessions\"],\"segments\":[\"platform\",\"region\",\"new_user\"],\"plan\":{\"primary_metric\":\"conversion\",\"secondary_metrics\":[\"revenue\"],\"guardrails\":[{\"metric\":\"bounce\"}],\"baseline\":0.1,\"mde\":0.1,\"alpha\":0.05,\"power\":0.8,\"sides\":2,\"multiple_testing\":\"holm\",\"planned_n_total\":30000,\"planned_looks\":[],\"primary_covariate\":null,\"decision_rule\":{\"srm_alpha\":0.001,\"ship_requires\":\"primary_ci_excludes_zero\",\"guardrail_check\":\"no_significant_harm\",\"extend_if_underpowered\":true}},\"decision_rule_text\":\"invalid if SRM p < 0.001; ship if the primary CI excludes zero on the good side (after multiple-testing adjustment across arms; with interim looks, only if the O'Brien-Fleming boundary was crossed) and no guardrail shows statistically significant harm; extend if inconclusive and n < planned n; otherwise don't ship\",\"summary\":\"smoke-16 'homepage-redesign': 2 arms, 30,000 units. Primary conversion (MDE 10% relative, alpha 0.05); guardrails: bounce; planned n 30,000.\"}",
+    "[r2] check_srm result_id=r-84ccd05d\n{\"result_id\":\"r-84ccd05d\",\"method\":\"chi_square_goodness_of_fit\",\"inputs\":{\"experiment_id\":\"smoke-16\"},\"experiment_id\":\"smoke-16\",\"arms\":[{\"arm\":\"control\",\"expected_share\":0.5,\"observed_share\":0.497033,\"observed\":14911,\"expected\":15000.0},{\"arm\":\"treatment\",\"expected_share\":0.5,\"observed_share\":0.502967,\"observed\":15089,\"expected\":15000.0}],\"chi2\":1.05613,\"df\":1,\"p_value\":0.304099,\"alpha\":0.001,\"passed\":true,\"summary\":\"Observed split control 49.7% / treatment 50.3%; chi2 = 1.056, p = 0.3; SRM check passed.\"}",
+    "[r3] analyze_metric result_id=r-61bb4350\n{\"result_id\":\"r-61bb4350\",\"method\":\"two_proportion_z\",\"inputs\":{\"experiment_id\":\"smoke-16\",\"metric\":\"conversion\",\"method\":\"auto\",\"cuped_covariate\":null,\"arms\":[\"treatment\"]},\"experiment_id\":\"smoke-16\",\"metric\":\"conversion\",\"metric_type\":\"binary\",\"role\":\"primary\",\"alpha\":0.05,\"cuped_covariate\":null,\"comparisons\":[{\"result_id\":\"r-61bb4350.treatment\",\"arm\":\"treatment\",\"control\":\"control\",\"n_control\":14911,\"n_treatment\":15089,\"mean_control\":0.0988532,\"mean_treatment\":0.112002,\"abs_effect\":0.0131489,\"abs_ci\":{\"low\":0.00620125,\"high\":0.0200966},\"rel_effect\":0.133015,\"rel_ci\":{\"low\":0.0606731,\"high\":0.210691},\"p_value\":0.000207786,\"significant\":true,\"direction\":\"better\",\"variance_reduction\":null,\"guardrail\":null,\"summary\":\"treatment vs control: +13.3% (95% CI +6.07% to +21.1%), p = 0.00021; absolute +0.01315 (0.09885 -> 0.112); better\"}],\"notes\":[]}",
+    "[r4] analyze_metric result_id=r-18b7021e\n{\"result_id\":\"r-18b7021e\",\"method\":\"two_proportion_z\",\"inputs\":{\"experiment_id\":\"smoke-16\",\"metric\":\"bounce\",\"method\":\"auto\",\"cuped_covariate\":null,\"arms\":[\"treatment\"]},\"experiment_id\":\"smoke-16\",\"metric\":\"bounce\",\"metric_type\":\"binary\",\"role\":\"guardrail\",\"alpha\":0.05,\"cuped_covariate\":null,\"comparisons\":[{\"result_id\":\"r-18b7021e.treatment\",\"arm\":\"treatment\",\"control\":\"control\",\"n_control\":14911,\"n_treatment\":15089,\"mean_control\":0.30112,\"mean_treatment\":0.300815,\"abs_effect\":-0.000304815,\"abs_ci\":{\"low\":-0.0106857,\"high\":0.0100761},\"rel_effect\":-0.00101227,\"rel_ci\":{\"low\":-0.0348867,\"high\":0.0340576},\"p_value\":0.954107,\"significant\":false,\"direction\":\"inconclusive\",\"variance_reduction\":null,\"guardrail\":{\"rule\":\"no_significant_harm\",\"passed\":true},\"summary\":\"treatment vs control: -0.101% (95% CI -3.49% to +3.41%), p = 0.95; absolute -0.0003048 (0.3011 -> 0.3008); inconclusive; guardrail passed (no statistically significant harm)\"}],\"notes\":[]}",
+    "[r5] daily_effects result_id=r-8074e975\n{\"result_id\":\"r-8074e975\",\"method\":\"wls_trend_on_daily_relative_effect\",\"inputs\":{\"experiment_id\":\"smoke-16\",\"metric\":\"conversion\",\"arm\":\"treatment\"},\"experiment_id\":\"smoke-16\",\"metric\":\"conversion\",\"arm\":\"treatment\",\"days\":[{\"day\":1,\"rel_effect\":0.487506,\"rel_ci\":{\"low\":0.15248,\"high\":0.947068},\"p_value\":0.00239809},{\"day\":2,\"rel_effect\":0.770531,\"rel_ci\":{\"low\":0.388595,\"high\":1.29908},\"p_value\":4.76462e-06},{\"day\":3,\"rel_effect\":0.141711,\"rel_ci\":{\"low\":-0.123273,\"high\":0.49452},\"p_value\":0.322404},{\"day\":4,\"rel_effect\":0.101435,\"rel_ci\":{\"low\":-0.164963,\"high\":0.45904},\"p_value\":0.490154},{\"day\":5,\"rel_effect\":0.306979,\"rel_ci\":{\"low\":0.00039263,\"high\":0.725456},\"p_value\":0.0496682},{\"day\":6,\"rel_effect\":0.0811113,\"rel_ci\":{\"low\":-0.159311,\"high\":0.39434},\"p_value\":0.540171},{\"day\":7,\"rel_effect\":-0.0205418,\"rel_ci\":{\"low\":-0.248003,\"high\":0.275316},\"p_value\":0.875838},{\"day\":8,\"rel_effect\":0.303587,\"rel_ci\":{\"low\":-0.000951326,\"high\":0.718482},\"p_value\":0.0508162},{\"day\":9,\"rel_effect\":-0.0771324,\"rel_ci\":{\"low\":-0.288503,\"high\":0.19425},\"p_value\":0.537884},{\"day\":10,\"rel_effect\":0.0146731,\"rel_ci\":{\"low\":-0.219557,\"high\":0.320418},\"p_value\":0.912293},{\"day\":11,\"rel_effect\":-0.0517241,\"rel_ci\":{\"low\":-0.287709,\"high\":0.260294},\"p_value\":0.710655},{\"day\":12,\"rel_effect\":0.0713232,\"rel_ci\":{\"low\":-0.17735,\"high\":0.399191},\"p_value\":0.605772},{\"day\":13,\"rel_effect\":-0.113754,\"rel_ci\":{\"low\":-0.315418,\"high\":0.143163},\"p_value\":0.349241},{\"day\":14,\"rel_effect\":0.0657095,\"rel_ci\":{\"low\":-0.187413,\"high\":0.401653},\"p_value\":0.642079}],\"slope_per_day\":-0.0329138,\"slope_p_value\":0.0108586,\"decaying\":true,\"summary\":\"conversion by day (treatment vs control): day 1 +48.8%, day 14 +6.57%; trend -3.29 percentage points of lift per day, p = 0.011: the effect shrinks over time (novelty pattern).\"}",
+    "[r6] segment_effects result_id=r-3b9ccd51\n{\"result_id\":\"r-3b9ccd51\",\"method\":\"per_segment_two_proportion_z_holm_adjusted\",\"inputs\":{\"experiment_id\":\"smoke-16\",\"metric\":\"conversion\",\"segment\":\"platform\",\"arm\":\"treatment\",\"adjust\":\"holm\"},\"experiment_id\":\"smoke-16\",\"metric\":\"conversion\",\"segment\":\"platform\",\"arm\":\"treatment\",\"adjust_method\":\"holm\",\"levels\":[{\"level\":\"android\",\"n_control\":5304,\"n_treatment\":5341,\"rel_effect\":0.0822938,\"rel_ci\":{\"low\":-0.0340927,\"high\":0.213453},\"abs_effect\":0.0079439,\"p_value\":0.17283,\"p_adjusted\":0.17283,\"summary\":\"platform=android: +8.23% (-3.41% to +21.3%), p = 0.17 adjusted\"},{\"level\":\"ios\",\"n_control\":6633,\"n_treatment\":6726,\"rel_effect\":0.148584,\"rel_ci\":{\"low\":0.0424403,\"high\":0.266551},\"abs_effect\":0.0150981,\"p_value\":0.00512099,\"p_adjusted\":0.015363,\"summary\":\"platform=ios: +14.9% (+4.24% to +26.7%), p = 0.015 adjusted\"},{\"level\":\"web\",\"n_control\":2974,\"n_treatment\":3022,\"rel_effect\":0.185724,\"rel_ci\":{\"low\":0.0232701,\"high\":0.377094},\"abs_effect\":0.0179853,\"p_value\":0.0235013,\"p_adjusted\":0.0470026,\"summary\":\"platform=web: +18.6% (+2.33% to +37.7%), p = 0.047 adjusted\"}],\"skipped_levels\":[],\"heterogeneity_q\":1.29827,\"heterogeneity_p\":0.522497,\"exploratory\":true,\"summary\":\"Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.52: no evidence the effect differs across levels. platform=android: +8.23% (-3.41% to +21.3%), p = 0.17 adjusted; platform=ios: +14.9% (+4.24% to +26.7%), p = 0.015 adjusted; platform=web: +18.6% (+2.33% to +37.7%), p = 0.047 adjusted\"}"
+  ]
+}

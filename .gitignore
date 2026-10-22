@@ -14,3 +14,6 @@ data/
 
 # Eval runs: keep summaries and tables, not per-readout records (large)
 evals/results/*/records.jsonl
+
+# Local dev-server config for the Claude app
+.claude/launch.json

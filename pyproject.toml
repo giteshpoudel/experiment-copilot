@@ -23,7 +23,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6", "scikit-uplift>=0.5"]
+dev = ["pytest>=8", "ruff>=0.6", "scikit-uplift>=0.5", "streamlit>=1.38"]
+demo = ["streamlit>=1.38"]
 
 [project.scripts]
 expc = "expcopilot.cli:app"

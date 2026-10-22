@@ -1,0 +1,58 @@
+{
+  "experiment_id": "smoke-15",
+  "mode": "agent",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: INVALID\n\n## Primary result\nNot analyzed. The experiment fails the pre-registered SRM validity check, so effect estimates would not be trustworthy.\n\n## Guardrails\nNot analyzed. Per the plan, SRM failure invalidates the experiment before any effect or guardrail evaluation.\n\n## Validity checks (SRM, peeking, novelty)\n- SRM: **FAILED**. Observed split control 51.27% / treatment 48.73%; chi2 = 18.79, p < 0.0001; SRM check FAILED (p < 0.001): results are not trustworthy [r2].\n- Planned split was 50/50 [r1]; observed counts were control 14,901 vs treatment 14,162 [r1].\n- Peeking / novelty: not applicable; analysis stopped at SRM.\n\n## Caveats\nThe SRM threshold is the plan's alpha of p < 0.001 [r1], and this check fails at p < 0.0001 [r2]. This suggests a traffic-allocation or instrumentation problem, not a treatment effect. Do not ship based on this experiment; investigate the mismatch before re-running.\n\n## Exploratory findings\nNone.",
+  "decision": "invalid",
+  "trace": [
+    {
+      "step": 1,
+      "label": "r1",
+      "tool": "describe_experiment",
+      "arguments": {
+        "experiment_id": "smoke-15"
+      },
+      "result_id": "r-7c5e6db6",
+      "method": "registry_lookup",
+      "summary": "smoke-15 'address-autocomplete': 2 arms, 29,063 units. Primary conversion (MDE 10% relative, alpha 0.05); guardrails: bounce; planned n 30,000.",
+      "is_error": false,
+      "latency_s": 0.13215612480416894
+    },
+    {
+      "step": 2,
+      "label": "r2",
+      "tool": "check_srm",
+      "arguments": {
+        "experiment_id": "smoke-15"
+      },
+      "result_id": "r-760ffd68",
+      "method": "chi_square_goodness_of_fit",
+      "summary": "Observed split control 51.27% / treatment 48.73%; chi2 = 18.79, p < 0.0001; SRM check FAILED (p < 0.001): results are not trustworthy.",
+      "is_error": false,
+      "latency_s": 0.048228665720671415
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 14038,
+    "cache_hit_tokens": 11776,
+    "cache_miss_tokens": 2262,
+    "output_tokens": 1100,
+    "reasoning_tokens": 743,
+    "cost_usd": 0.00393,
+    "requests": 3
+  },
+  "latency_s": 13.60854541696608,
+  "turns": 3,
+  "tool_calls": 2,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": [],
+  "sources": [
+    "[r1] describe_experiment result_id=r-7c5e6db6\n{\"result_id\":\"r-7c5e6db6\",\"method\":\"registry_lookup\",\"inputs\":{\"experiment_id\":\"smoke-15\"},\"experiment_id\":\"smoke-15\",\"name\":\"address-autocomplete\",\"description\":\"Autocomplete for shipping address fields.\",\"status\":\"complete\",\"unit\":\"user\",\"start_date\":\"2026-09-01\",\"end_date\":\"2026-09-14\",\"has_daily\":false,\"arms\":[{\"name\":\"control\",\"is_control\":true,\"expected_share\":0.5,\"observed_n\":14901},{\"name\":\"treatment\",\"is_control\":false,\"expected_share\":0.5,\"observed_n\":14162}],\"n_total\":29063,\"metrics\":[{\"name\":\"conversion\",\"type\":\"binary\",\"higher_is_better\":true,\"columns\":[\"converted\"],\"default_method\":\"two_proportion_z\",\"description\":\"Unit made at least one purchase during the experiment\"},{\"name\":\"revenue\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"revenue\"],\"default_method\":\"welch_t\",\"description\":\"Revenue per unit over the experiment (zero for non-buyers; skewed)\"},{\"name\":\"sessions\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"sessions\"],\"default_method\":\"welch_t\",\"description\":\"Sessions per unit over the experiment\"},{\"name\":\"revenue_per_session\",\"type\":\"ratio\",\"higher_is_better\":true,\"columns\":[\"revenue\",\"sessions\"],\"default_method\":\"delta_method\",\"description\":\"Total revenue / total sessions (ratio metric; unit is the user)\"},{\"name\":\"bounce\",\"type\":\"binary\",\"higher_is_better\":false,\"columns\":[\"bounced\"],\"default_method\":\"two_proportion_z\",\"description\":\"Unit's first session ended without a second page view\"}],\"covariates\":[\"pre_revenue\",\"pre_sessions\"],\"segments\":[\"platform\",\"region\",\"new_user\"],\"plan\":{\"primary_metric\":\"conversion\",\"secondary_metrics\":[\"revenue\"],\"guardrails\":[{\"metric\":\"bounce\"}],\"baseline\":0.1,\"mde\":0.1,\"alpha\":0.05,\"power\":0.8,\"sides\":2,\"multiple_testing\":\"holm\",\"planned_n_total\":30000,\"planned_looks\":[],\"primary_covariate\":null,\"decision_rule\":{\"srm_alpha\":0.001,\"ship_requires\":\"primary_ci_excludes_zero\",\"guardrail_check\":\"no_significant_harm\",\"extend_if_underpowered\":true}},\"decision_rule_text\":\"invalid if SRM p < 0.001; ship if the primary CI excludes zero on the good side (after multiple-testing adjustment across arms; with interim looks, only if the O'Brien-Fleming boundary was crossed) and no guardrail shows statistically significant harm; extend if inconclusive and n < planned n; otherwise don't ship\",\"summary\":\"smoke-15 'address-autocomplete': 2 arms, 29,063 units. Primary conversion (MDE 10% relative, alpha 0.05); guardrails: bounce; planned n 30,000.\"}",
+    "[r2] check_srm result_id=r-760ffd68\n{\"result_id\":\"r-760ffd68\",\"method\":\"chi_square_goodness_of_fit\",\"inputs\":{\"experiment_id\":\"smoke-15\"},\"experiment_id\":\"smoke-15\",\"arms\":[{\"arm\":\"control\",\"expected_share\":0.5,\"observed_share\":0.512714,\"observed\":14901,\"expected\":14531.5},{\"arm\":\"treatment\",\"expected_share\":0.5,\"observed_share\":0.487286,\"observed\":14162,\"expected\":14531.5}],\"chi2\":18.7909,\"df\":1,\"p_value\":1.45859e-05,\"alpha\":0.001,\"passed\":false,\"summary\":\"Observed split control 51.27% / treatment 48.73%; chi2 = 18.79, p < 0.0001; SRM check FAILED (p < 0.001): results are not trustworthy.\"}"
+  ]
+}

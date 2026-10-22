@@ -1,0 +1,109 @@
+{
+  "experiment_id": "smoke-19",
+  "mode": "agent",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: SHIP \u2014 variant_c\n\n## Primary result\nConversion (primary, higher is better): **variant_c vs control: +9.41% (95% CI +2.21% to +17.1%), p = 0.0096; absolute +0.009016 (0.09585 -> 0.1049); better** [r3]. With Holm correction across the three treatment arms, variant_c remains significant: **adjusted p = 0.029** [r5]. variant_b and variant_d are inconclusive (adjusted p = 0.66 each) [r5].\n\n## Guardrails\nBounce guardrail (higher is worse): **variant_c vs control: -2.25% (95% CI -5.59% to +1.21%), p = 0.2; guardrail passed (no statistically significant harm)** [r4]. variant_b and variant_d also passed the bounce guardrail [r4].\n\n## Validity checks (SRM, peeking, novelty)\n- **SRM passed**: observed split control 24.95% / variant_b 25.13% / variant_c 24.68% / variant_d 25.24%; chi2 = 4.188, p = 0.24 [r2].\n- **Peeking**: no planned interim looks, so no sequential test was required [r1].\n- **Novelty**: daily data is not available for this experiment, so a daily-effects decay check could not be run [r1].\n\n## Caveats\n- The observed primary effect (+9.41% relative) is just below the pre-registered MDE of 10% relative, although the confidence interval excludes zero [r1][r3].\n- Revenue is listed as a secondary metric in the plan but was not part of the ship decision rule and was not analyzed here [r1].\n- No daily data, so a novelty/decay check could not be performed [r1].\n\n## Exploratory findings\nNone run; not needed for the decision.",
+  "decision": "ship",
+  "trace": [
+    {
+      "step": 1,
+      "label": "r1",
+      "tool": "describe_experiment",
+      "arguments": {
+        "experiment_id": "smoke-19"
+      },
+      "result_id": "r-111d84d4",
+      "method": "registry_lookup",
+      "summary": "smoke-19 'pricing-page-layouts': 4 arms, 60,000 units. Primary conversion (MDE 10% relative, alpha 0.05); guardrails: bounce; planned n 60,000.",
+      "is_error": false,
+      "latency_s": 0.14663479197770357
+    },
+    {
+      "step": 2,
+      "label": "r2",
+      "tool": "check_srm",
+      "arguments": {
+        "experiment_id": "smoke-19"
+      },
+      "result_id": "r-019d6649",
+      "method": "chi_square_goodness_of_fit",
+      "summary": "Observed split control 24.95% / variant_b 25.13% / variant_c 24.68% / variant_d 25.24%; chi2 = 4.188, p = 0.24; SRM check passed.",
+      "is_error": false,
+      "latency_s": 0.04968762490898371
+    },
+    {
+      "step": 3,
+      "label": "r3",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "smoke-19",
+        "metric": "conversion",
+        "method": "auto"
+      },
+      "result_id": "r-09a878c9",
+      "method": "two_proportion_z",
+      "summary": "variant_b vs control: +3.46% (95% CI -3.42% to +10.8%), p = 0.33; absolute +0.003319 (0.09585 -> 0.09916); inconclusive | variant_c vs control: +9.41% (95% CI +2.21% to +17.1%), p = 0.0096; absolute +0.009016 (0.09585 -> 0.1049); better | variant_d vs control: +2.74% (95% CI -4.1% to +10.1%), p = 0.44; absolute +0.002622 (0.09585 -> 0.09847); inconclusive",
+      "is_error": false,
+      "latency_s": 0.0437308750115335
+    },
+    {
+      "step": 4,
+      "label": "r4",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "smoke-19",
+        "metric": "bounce",
+        "method": "auto"
+      },
+      "result_id": "r-2a768ab3",
+      "method": "two_proportion_z",
+      "summary": "variant_b vs control: -0.493% (95% CI -3.86% to +2.99%), p = 0.78; absolute -0.001492 (0.3028 -> 0.3013); inconclusive; guardrail passed (no statistically significant harm) | variant_c vs control: -2.25% (95% CI -5.59% to +1.21%), p = 0.2; absolute -0.006816 (0.3028 -> 0.2959); inconclusive; guardrail passed (no statistically significant harm) | variant_d vs control: -0.926% (95% CI -4.28% to +2.54%), p = 0.6; absolute -0.002805 (0.3028 -> 0.3); inconclusive; guardrail passed (no statistically s",
+      "is_error": false,
+      "latency_s": 0.01996262464672327
+    },
+    {
+      "step": 4,
+      "label": "r5",
+      "tool": "adjust_pvalues",
+      "arguments": {
+        "result_ids": [
+          "r-09a878c9.variant_b",
+          "r-09a878c9.variant_c",
+          "r-09a878c9.variant_d"
+        ],
+        "method": "holm"
+      },
+      "result_id": "r-40027ae8",
+      "method": "holm",
+      "summary": "Holm over 3 comparisons: 1 significant at alpha 0.05. smoke-19 conversion: variant_b vs control: p = 0.66 adjusted; smoke-19 conversion: variant_c vs control: p = 0.029 adjusted; smoke-19 conversion: variant_d vs control: p = 0.66 adjusted",
+      "is_error": false,
+      "latency_s": 0.007461458910256624
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 27033,
+    "cache_hit_tokens": 22528,
+    "cache_miss_tokens": 4505,
+    "output_tokens": 2308,
+    "reasoning_tokens": 1528,
+    "cost_usd": 0.008039,
+    "requests": 5
+  },
+  "latency_s": 24.63900166703388,
+  "turns": 5,
+  "tool_calls": 5,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": [],
+  "sources": [
+    "[r1] describe_experiment result_id=r-111d84d4\n{\"result_id\":\"r-111d84d4\",\"method\":\"registry_lookup\",\"inputs\":{\"experiment_id\":\"smoke-19\"},\"experiment_id\":\"smoke-19\",\"name\":\"pricing-page-layouts\",\"description\":\"Three alternative pricing page layouts.\",\"status\":\"complete\",\"unit\":\"user\",\"start_date\":\"2026-09-01\",\"end_date\":\"2026-09-14\",\"has_daily\":false,\"arms\":[{\"name\":\"control\",\"is_control\":true,\"expected_share\":0.25,\"observed_n\":14972},{\"name\":\"variant_b\",\"is_control\":false,\"expected_share\":0.25,\"observed_n\":15076},{\"name\":\"variant_c\",\"is_control\":false,\"expected_share\":0.25,\"observed_n\":14810},{\"name\":\"variant_d\",\"is_control\":false,\"expected_share\":0.25,\"observed_n\":15142}],\"n_total\":60000,\"metrics\":[{\"name\":\"conversion\",\"type\":\"binary\",\"higher_is_better\":true,\"columns\":[\"converted\"],\"default_method\":\"two_proportion_z\",\"description\":\"Unit made at least one purchase during the experiment\"},{\"name\":\"revenue\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"revenue\"],\"default_method\":\"welch_t\",\"description\":\"Revenue per unit over the experiment (zero for non-buyers; skewed)\"},{\"name\":\"sessions\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"sessions\"],\"default_method\":\"welch_t\",\"description\":\"Sessions per unit over the experiment\"},{\"name\":\"revenue_per_session\",\"type\":\"ratio\",\"higher_is_better\":true,\"columns\":[\"revenue\",\"sessions\"],\"default_method\":\"delta_method\",\"description\":\"Total revenue / total sessions (ratio metric; unit is the user)\"},{\"name\":\"bounce\",\"type\":\"binary\",\"higher_is_better\":false,\"columns\":[\"bounced\"],\"default_method\":\"two_proportion_z\",\"description\":\"Unit's first session ended without a second page view\"}],\"covariates\":[\"pre_revenue\",\"pre_sessions\"],\"segments\":[\"platform\",\"region\",\"new_user\"],\"plan\":{\"primary_metric\":\"conversion\",\"secondary_metrics\":[\"revenue\"],\"guardrails\":[{\"metric\":\"bounce\"}],\"baseline\":0.1,\"mde\":0.1,\"alpha\":0.05,\"power\":0.8,\"sides\":2,\"multiple_testing\":\"holm\",\"planned_n_total\":60000,\"planned_looks\":[],\"primary_covariate\":null,\"decision_rule\":{\"srm_alpha\":0.001,\"ship_requires\":\"primary_ci_excludes_zero\",\"guardrail_check\":\"no_significant_harm\",\"extend_if_underpowered\":true}},\"decision_rule_text\":\"invalid if SRM p < 0.001; ship if the primary CI excludes zero on the good side (after multiple-testing adjustment across arms; with interim looks, only if the O'Brien-Fleming boundary was crossed) and no guardrail shows statistically significant harm; extend if inconclusive and n < planned n; otherwise don't ship\",\"summary\":\"smoke-19 'pricing-page-layouts': 4 arms, 60,000 units. Primary conversion (MDE 10% relative, alpha 0.05); guardrails: bounce; planned n 60,000.\"}",
+    "[r2] check_srm result_id=r-019d6649\n{\"result_id\":\"r-019d6649\",\"method\":\"chi_square_goodness_of_fit\",\"inputs\":{\"experiment_id\":\"smoke-19\"},\"experiment_id\":\"smoke-19\",\"arms\":[{\"arm\":\"control\",\"expected_share\":0.25,\"observed_share\":0.249533,\"observed\":14972,\"expected\":15000.0},{\"arm\":\"variant_b\",\"expected_share\":0.25,\"observed_share\":0.251267,\"observed\":15076,\"expected\":15000.0},{\"arm\":\"variant_c\",\"expected_share\":0.25,\"observed_share\":0.246833,\"observed\":14810,\"expected\":15000.0},{\"arm\":\"variant_d\",\"expected_share\":0.25,\"observed_share\":0.252367,\"observed\":15142,\"expected\":15000.0}],\"chi2\":4.18827,\"df\":3,\"p_value\":0.241839,\"alpha\":0.001,\"passed\":true,\"summary\":\"Observed split control 24.95% / variant_b 25.13% / variant_c 24.68% / variant_d 25.24%; chi2 = 4.188, p = 0.24; SRM check passed.\"}",
+    "[r3] analyze_metric result_id=r-09a878c9\n{\"result_id\":\"r-09a878c9\",\"method\":\"two_proportion_z\",\"inputs\":{\"experiment_id\":\"smoke-19\",\"metric\":\"conversion\",\"method\":\"auto\",\"cuped_covariate\":null,\"arms\":[\"variant_b\",\"variant_c\",\"variant_d\"]},\"experiment_id\":\"smoke-19\",\"metric\":\"conversion\",\"metric_type\":\"binary\",\"role\":\"primary\",\"alpha\":0.05,\"cuped_covariate\":null,\"comparisons\":[{\"result_id\":\"r-09a878c9.variant_b\",\"arm\":\"variant_b\",\"control\":\"control\",\"n_control\":14972,\"n_treatment\":15076,\"mean_control\":0.0958456,\"mean_treatment\":0.0991642,\"abs_effect\":0.00331866,\"abs_ci\":{\"low\":-0.0033893,\"high\":0.0100266},\"rel_effect\":0.034625,\"rel_ci\":{\"low\":-0.0341901,\"high\":0.108461},\"p_value\":0.332215,\"significant\":false,\"direction\":\"inconclusive\",\"variance_reduction\":null,\"guardrail\":null,\"summary\":\"variant_b vs control: +3.46% (95% CI -3.42% to +10.8%), p = 0.33; absolute +0.003319 (0.09585 -> 0.09916); inconclusive\"},{\"result_id\":\"r-09a878c9.variant_c\",\"arm\":\"variant_c\",\"control\":\"control\",\"n_control\":14972,\"n_treatment\":14810,\"mean_control\":0.0958456,\"mean_treatment\":0.104862,\"abs_effect\":0.009016,\"abs_ci\":{\"low\":0.00219091,\"high\":0.0158411},\"rel_effect\":0.094068,\"rel_ci\":{\"low\":0.0221032,\"high\":0.171342},\"p_value\":0.00962187,\"significant\":true,\"direction\":\"better\",\"variance_reduction\":null,\"guardrail\":null,\"summary\":\"variant_c vs control: +9.41% (95% CI +2.21% to +17.1%), p = 0.0096; absolute +0.009016 (0.09585 -> 0.1049); better\"},{\"result_id\":\"r-09a878c9.variant_d\",\"arm\":\"variant_d\",\"control\":\"control\",\"n_control\":14972,\"n_treatment\":15142,\"mean_control\":0.0958456,\"mean_treatment\":0.0984678,\"abs_effect\":0.00262226,\"abs_ci\":{\"low\":-0.00406771,\"high\":0.00931223},\"rel_effect\":0.0273592,\"rel_ci\":{\"low\":-0.0410324,\"high\":0.100736},\"p_value\":0.442342,\"significant\":false,\"direction\":\"inconclusive\",\"variance_reduction\":null,\"guardrail\":null,\"summary\":\"variant_d vs control: +2.74% (95% CI -4.1% to +10.1%), p = 0.44; absolute +0.002622 (0.09585 -> 0.09847); inconclusive\"}],\"notes\":[\"Several treatment arms: adjust p-values with adjust_pvalues (the plan specifies holm).\"]}",
+    "[r4] analyze_metric result_id=r-2a768ab3\n{\"result_id\":\"r-2a768ab3\",\"method\":\"two_proportion_z\",\"inputs\":{\"experiment_id\":\"smoke-19\",\"metric\":\"bounce\",\"method\":\"auto\",\"cuped_covariate\":null,\"arms\":[\"variant_b\",\"variant_c\",\"variant_d\"]},\"experiment_id\":\"smoke-19\",\"metric\":\"bounce\",\"metric_type\":\"binary\",\"role\":\"guardrail\",\"alpha\":0.05,\"cuped_covariate\":null,\"comparisons\":[{\"result_id\":\"r-2a768ab3.variant_b\",\"arm\":\"variant_b\",\"control\":\"control\",\"n_control\":14972,\"n_treatment\":15076,\"mean_control\":0.302765,\"mean_treatment\":0.301274,\"abs_effect\":-0.00149161,\"abs_ci\":{\"low\":-0.0118744,\"high\":0.00889114},\"rel_effect\":-0.00492664,\"rel_ci\":{\"low\":-0.0385618,\"high\":0.0298851},\"p_value\":0.77827,\"significant\":false,\"direction\":\"inconclusive\",\"variance_reduction\":null,\"guardrail\":{\"rule\":\"no_significant_harm\",\"passed\":true},\"summary\":\"variant_b vs control: -0.493% (95% CI -3.86% to +2.99%), p = 0.78; absolute -0.001492 (0.3028 -> 0.3013); inconclusive; guardrail passed (no statistically significant harm)\"},{\"result_id\":\"r-2a768ab3.variant_c\",\"arm\":\"variant_c\",\"control\":\"control\",\"n_control\":14972,\"n_treatment\":14810,\"mean_control\":0.302765,\"mean_treatment\":0.295949,\"abs_effect\":-0.00681648,\"abs_ci\":{\"low\":-0.0172188,\"high\":0.00358586},\"rel_effect\":-0.0225141,\"rel_ci\":{\"low\":-0.0559239,\"high\":0.0120516},\"p_value\":0.199026,\"significant\":false,\"direction\":\"inconclusive\",\"variance_reduction\":null,\"guardrail\":{\"rule\":\"no_significant_harm\",\"passed\":true},\"summary\":\"variant_c vs control: -2.25% (95% CI -5.59% to +1.21%), p = 0.2; absolute -0.006816 (0.3028 -> 0.2959); inconclusive; guardrail passed (no statistically significant harm)\"},{\"result_id\":\"r-2a768ab3.variant_d\",\"arm\":\"variant_d\",\"control\":\"control\",\"n_control\":14972,\"n_treatment\":15142,\"mean_control\":0.302765,\"mean_treatment\":0.29996,\"abs_effect\":-0.00280479,\"abs_ci\":{\"low\":-0.0131699,\"high\":0.00756029},\"rel_effect\":-0.0092639,\"rel_ci\":{\"low\":-0.0427685,\"high\":0.0254121},\"p_value\":0.595859,\"significant\":false,\"direction\":\"inconclusive\",\"variance_reduction\":null,\"guardrail\":{\"rule\":\"no_significant_harm\",\"passed\":true},\"summary\":\"variant_d vs control: -0.926% (95% CI -4.28% to +2.54%), p = 0.6; absolute -0.002805 (0.3028 -> 0.3); inconclusive; guardrail passed (no statistically significant harm)\"}],\"notes\":[\"Several treatment arms: adjust p-values with adjust_pvalues (the plan specifies holm).\"]}",
+    "[r5] adjust_pvalues result_id=r-40027ae8\n{\"result_id\":\"r-40027ae8\",\"method\":\"holm\",\"inputs\":{\"result_ids\":[\"r-09a878c9.variant_b\",\"r-09a878c9.variant_c\",\"r-09a878c9.variant_d\"],\"method\":\"holm\"},\"alpha\":0.05,\"entries\":[{\"result_id\":\"r-09a878c9.variant_b\",\"label\":\"smoke-19 conversion: variant_b vs control\",\"p_value\":0.332215,\"p_adjusted\":0.664431,\"significant_adjusted\":false},{\"result_id\":\"r-09a878c9.variant_c\",\"label\":\"smoke-19 conversion: variant_c vs control\",\"p_value\":0.00962187,\"p_adjusted\":0.0288656,\"significant_adjusted\":true},{\"result_id\":\"r-09a878c9.variant_d\",\"label\":\"smoke-19 conversion: variant_d vs control\",\"p_value\":0.442342,\"p_adjusted\":0.664431,\"significant_adjusted\":false}],\"summary\":\"Holm over 3 comparisons: 1 significant at alpha 0.05. smoke-19 conversion: variant_b vs control: p = 0.66 adjusted; smoke-19 conversion: variant_c vs control: p = 0.029 adjusted; smoke-19 conversion: variant_d vs control: p = 0.66 adjusted\"}"
+  ]
+}
