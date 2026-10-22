@@ -38,6 +38,7 @@ SCENARIO_NOTES = {
     "smoke-10": "A ratio metric (revenue per session) that needs the delta method.",
     "smoke-03": "A one-page checkout test with a conversion lift.",
     "hillstrom": "Real data: Kevin Hillstrom's 64,000-customer e-mail test, three arms.",
+    "criteo": "Real data: 1M users from Criteo's ad-targeting test, split 85/15 by design.",
 }
 
 
