@@ -1,0 +1,2 @@
+# Streamlit Community Cloud installs this for the replay demo (no project install needed).
+streamlit>=1.38

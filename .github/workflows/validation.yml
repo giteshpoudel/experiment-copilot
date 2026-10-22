@@ -1,0 +1,26 @@
+name: Statistics validation
+
+# Slow simulation checks: CI coverage, A/A false positives, peeking, CUPED width,
+# planned sample sizes and label reproducibility. Weekly, or on demand.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  slow-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: pytest -m slow
+      - run: expc validate --out validation-ci.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: validation
+          path: validation-ci.json
