@@ -1,6 +1,7 @@
 # Experimentation Copilot
 
 [![CI](https://github.com/giteshpoudel/experiment-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/giteshpoudel/experiment-copilot/actions/workflows/ci.yml)
+[![Demo](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://experiment-copilot-idvwpntu3pan6hk9rrjxfz.streamlit.app)
 
 **An MCP server that lets an AI assistant analyze A/B tests with validated statistics, and an
 eval harness that measures whether it actually reaches the right ship decision.**
@@ -199,10 +200,10 @@ where ads went to 85% of users by design ([full report](reports/criteo.md)).
 
 ## Try the demo
 
-`streamlit run app/streamlit_app.py` replays saved runs: pick an experiment (SRM, novelty,
+**[Open the live demo](https://experiment-copilot-idvwpntu3pan6hk9rrjxfz.streamlit.app)** (it may take ~20 s to wake up). It replays saved runs: pick an experiment (SRM, novelty,
 four arms, ratio metric, Hillstrom), read the cited readout beside every tool call, and
-compare it with the no-tools baseline. It needs no API key; with `LLM_API_KEY` set and a local
-store, a live mode runs the agent.
+compare it with the no-tools baseline. Locally, `streamlit run app/streamlit_app.py` does the
+same, and with `LLM_API_KEY` set and a local store a live mode runs the agent.
 
 ## What the evals and tests caught
 
