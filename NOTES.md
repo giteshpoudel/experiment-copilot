@@ -292,3 +292,22 @@ Running log for the README's "what the evals caught" section. Newest last.
   disclosed as such.
 - One agent tool call passed an unexpected argument; the server's validation error went back to
   the model, which recovered.
+
+### Fix: Fieller relative CIs (2026-10-22)
+
+- Replaced the delta-method relative CI with a Fieller interval (`fieller_relative_ci`) in every
+  `from_arm_means` estimator. At ratio = 1 its statistic is the unpooled Wald z for the
+  difference, so "relative CI excludes 0" ⇔ "absolute test rejects", including with Welch's t.
+  `rel_se` is still the delta-method se, for reference.
+- Tests: endpoints match scipy root-finding to 1e-10; on 5,000 near-boundary cases the new
+  interval never disagrees with the test (the old one disagreed 1,248 times); unbounded when
+  the control mean is not distinguishable from 0.
+- `expc validate`: relative coverage rose from 94.1–94.35% to 94.25–94.9%; absolute coverage
+  unchanged. Closes the Phase 2 open item on relative-CI under-coverage.
+- Eval labels are unchanged (the oracle never used the relative CI; the slow reproduce test
+  passes).
+- **Disclosure:** found by inspecting a test-split failure (e042). The README keeps the test
+  numbers as measured before the fix. Only dev was rerun afterwards (agent configs only; the
+  baseline never sees tool output): agent 100% / 100% (decision accuracy / required checks),
+  99% grounded, $0.0062 and 26 s per readout; Flash 100% / 100%, 97%, $0.0015. No regression.
+  Rerun cost: $1.81.

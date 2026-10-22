@@ -1,0 +1,143 @@
+{
+  "meta": {
+    "split": "dev",
+    "runs": 3,
+    "scenarios": 40,
+    "configs": [
+      "agent",
+      "agent-flash"
+    ],
+    "prompt_version": "f4733c23",
+    "judge": true
+  },
+  "summary": {
+    "agent": {
+      "model": "deepseek-v4-pro",
+      "mode": "agent",
+      "runs": 3,
+      "errors": 0,
+      "judge_cost_usd": 0.0486,
+      "metrics": {
+        "decision_accuracy": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "truth_agreement": {
+          "mean": 0.875,
+          "min": 0.875,
+          "max": 0.875
+        },
+        "false_ship_rate": {
+          "mean": 0.125,
+          "min": 0.125,
+          "max": 0.125
+        },
+        "method_choice": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "srm_recall": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "srm_false_alarm": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "grounding": {
+          "mean": 0.9938391666666666,
+          "min": 0.9921725,
+          "max": 0.9954175
+        },
+        "unparsed_rate": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "judge_score": {
+          "mean": 4.727777777777778,
+          "min": 4.725,
+          "max": 4.733333333333333
+        },
+        "cost_usd": {
+          "mean": 0.006181733333333334,
+          "min": 0.006055725,
+          "max": 0.006262275
+        },
+        "latency_s": {
+          "mean": 25.575508651688384,
+          "min": 24.24050973012345,
+          "max": 26.48519260309404
+        }
+      }
+    },
+    "agent-flash": {
+      "model": "deepseek-flash",
+      "mode": "agent",
+      "runs": 3,
+      "errors": 0,
+      "judge_cost_usd": 0.8367,
+      "metrics": {
+        "decision_accuracy": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "truth_agreement": {
+          "mean": 0.875,
+          "min": 0.875,
+          "max": 0.875
+        },
+        "false_ship_rate": {
+          "mean": 0.125,
+          "min": 0.125,
+          "max": 0.125
+        },
+        "method_choice": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "srm_recall": {
+          "mean": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "srm_false_alarm": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "grounding": {
+          "mean": 0.9710566666666667,
+          "min": 0.96715,
+          "max": 0.9775375000000001
+        },
+        "unparsed_rate": {
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "judge_score": {
+          "mean": 4.827777777777778,
+          "min": 4.775,
+          "max": 4.891666666666667
+        },
+        "cost_usd": {
+          "mean": 0.0015071333333333333,
+          "min": 0.0014880000000000002,
+          "max": 0.001528175
+        },
+        "latency_s": {
+          "mean": 17.77202249377733,
+          "min": 17.278635596926325,
+          "max": 18.211269577057102
+        }
+      }
+    }
+  }
+}

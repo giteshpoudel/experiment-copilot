@@ -95,7 +95,7 @@ over thousands of A/A and A/B experiments with known true effects
 
 | Check | Target | Result |
 | --- | --- | --- |
-| 95% CI coverage: z, Welch, delta method, CUPED | 95% | 94.1–94.8% |
+| 95% CI coverage: z, Welch, delta method, CUPED (absolute and relative) | 95% | 94.3–94.9% |
 | A/A false-positive rate | 5% | 4.5–4.9% |
 | False positives with 14 daily peeks: naive / O'Brien-Fleming / mSPRT | ≤ 5% | 22.3% / 4.75% / 0.35% |
 | CUPED CI width vs Welch at ρ = 0.5 / 0.9 | √(1 − r²) | 0.935× / 0.607× |
@@ -150,6 +150,12 @@ times, and results are reported as the mean with the range across runs.
 through). So the agents are at the ceiling the plan allows: the remaining gap is in the plan, not
 the agent.
 
+**Disclosure:** inspecting one test-split failure (e042) revealed an engine bug: the relative
+confidence interval could disagree with the absolute test. It was fixed afterwards (see below),
+so the test numbers above predate the fix and are reported as measured. To avoid tuning on the
+test split, only the dev split was rerun after the fix. Both agents matched the rule 100% of
+the time on dev before and after, with no regression.
+
 Without tools, the same model spends 2.7× as much and takes 3× as long, mostly reasoning
 through arithmetic, and still gets a quarter of the decisions wrong. Most of its misses are
 cautious "don't ship" calls on revenue tests, where it can't apply the CUPED adjustment the plan
@@ -178,7 +184,10 @@ Some of the most useful output of this project was finding mistakes, including m
   `+6.98% (95% CI −0.157% to +14.1%), p = 0.047 … better`: the verdict came from the absolute
   CI, which excluded zero, while the delta-method relative CI did not. Three agent runs read it
   three ways (ship, don't ship, and no decision after running out of tokens). This was the only
-  scenario the Pro agent got wrong.
+  scenario the Pro agent got wrong. The fix is a Fieller interval for the ratio, which uses the
+  same statistic as the test at ratio = 1, so the two can never disagree. On 5,000
+  near-boundary cases the old interval disagreed with the test 1,248 times and the new one
+  never does; relative-CI coverage also rose from 94.1–94.35% to 94.25–94.9%.
 - **Pre-registration gaps.** Whether to use CUPED, and which test applies after planned looks,
   could each flip a significance call. Both are now part of the plan, so the oracle is
   unambiguous.
