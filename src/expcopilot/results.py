@@ -45,6 +45,8 @@ def fmt_pct(x: float, digits: int = 3, signed: bool = True) -> str:
     """0.0873 -> '+8.73%'."""
     if math.isnan(x):
         return "n/a"
+    if math.isinf(x):
+        return "unbounded"
     s = f"{x * 100:.{digits}g}%"
     return ("+" + s) if signed and x > 0 else s
 

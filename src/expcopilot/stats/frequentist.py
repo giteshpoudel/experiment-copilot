@@ -2,7 +2,8 @@
 
 Every estimator returns an `EffectEstimate` with the absolute effect (treatment - control) and
 the relative effect (treatment / control - 1), each with a CI, plus a two-sided p-value. The
-relative CI uses the delta method on the ratio of the two independent arm means.
+relative CI is a Fieller interval, so it always agrees with the absolute test about whether
+the effect is significant; `rel_se` is the delta-method standard error, for reference only.
 """
 
 from __future__ import annotations
@@ -48,6 +49,27 @@ def relative_delta(
     return rel, math.sqrt(var)
 
 
+def fieller_relative_ci(
+    mean_t: float, var_mean_t: float, mean_c: float, var_mean_c: float, crit: float
+) -> tuple[float, float]:
+    """Fieller CI for m_t / m_c - 1, for independent arm means.
+
+    The set of ratios theta with |m_t - theta m_c| <= crit * sqrt(v_t + theta^2 v_c). At theta = 1
+    the statistic is exactly the unpooled test of the difference, so the relative CI excludes 0
+    if and only if the absolute test rejects at the same critical value. The delta-method interval
+    can disagree near the boundary. When the control mean is not itself distinguishable from 0
+    (m_c^2 <= crit^2 v_c) the set is unbounded and (-inf, inf) is returned.
+    """
+    a = mean_c**2 - crit**2 * var_mean_c
+    if a <= 0:
+        return -math.inf, math.inf
+    b = -2 * mean_t * mean_c
+    c = mean_t**2 - crit**2 * var_mean_t
+    half = math.sqrt(max(b * b - 4 * a * c, 0.0))
+    lo, hi = (-b - half) / (2 * a), (-b + half) / (2 * a)
+    return lo - 1, hi - 1
+
+
 def _two_sided_p(stat: float, df: float | None) -> float:
     if math.isnan(stat):
         return math.nan
@@ -83,7 +105,7 @@ def from_arm_means(
         abs_ci=(diff - crit * se, diff + crit * se),
         rel_effect=rel,
         rel_se=rel_se,
-        rel_ci=(rel - crit * rel_se, rel + crit * rel_se),
+        rel_ci=fieller_relative_ci(mean_t, var_mean_t, mean_c, var_mean_c, crit),
         p_value=p,
         alpha=alpha,
         df=df,

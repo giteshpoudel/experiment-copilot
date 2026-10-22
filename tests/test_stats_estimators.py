@@ -105,3 +105,61 @@ def test_cuped_matches_ancova() -> None:
     assert res.variance_reduction == pytest.approx(res.covariate_correlation**2, abs=0.02)
     plain = welch_ttest(y[~treat], y[treat])
     assert res.estimate.abs_se < plain.abs_se
+
+
+# --- Fieller relative CI -------------------------------------------------------------------
+
+
+def test_fieller_endpoints_match_scipy_root_finding() -> None:
+    from scipy.optimize import brentq
+
+    from expcopilot.stats.frequentist import fieller_relative_ci
+
+    m_t, v_t, m_c, v_c, crit = 0.1068, 2.4e-5 / 4, 0.09981, 2.2e-5 / 4, 1.959964
+    lo, hi = fieller_relative_ci(m_t, v_t, m_c, v_c, crit)
+
+    def g(theta: float) -> float:  # zero at the interval's endpoints
+        return (m_t - theta * m_c) ** 2 - crit**2 * (v_t + theta**2 * v_c)
+
+    ratio = m_t / m_c
+    assert lo + 1 == pytest.approx(brentq(g, 0.5, ratio), rel=1e-10)
+    assert hi + 1 == pytest.approx(brentq(g, ratio, 2.0), rel=1e-10)
+
+
+@pytest.mark.parametrize("use_t", [False, True])
+def test_relative_ci_agrees_with_the_test(use_t: bool) -> None:
+    """The e042 bug: delta-method relative CI included 0 while p < 0.05. Fieller can't."""
+    from expcopilot.stats.frequentist import from_arm_means
+
+    rng = np.random.default_rng(42)
+    disagreements = 0
+    for _ in range(5_000):
+        m_c = rng.uniform(0.05, 20)
+        se = m_c * rng.uniform(0.005, 0.2)
+        z = rng.uniform(1.6, 2.4)  # concentrate around the 5% boundary
+        v_c, v_t = (se**2) * rng.uniform(0.3, 0.7), None
+        v_t = se**2 - v_c
+        m_t = m_c + rng.choice([-1, 1]) * z * se
+        est = from_arm_means(
+            "x",
+            1000,
+            1000,
+            m_c,
+            m_t,
+            v_c,
+            v_t,
+            0.05,
+            df=float(rng.uniform(30, 2000)) if use_t else None,
+        )
+        rel_excludes_zero = est.rel_ci[0] > 0 or est.rel_ci[1] < 0
+        abs_excludes_zero = est.abs_ci[0] > 0 or est.abs_ci[1] < 0
+        disagreements += rel_excludes_zero != abs_excludes_zero
+        assert abs_excludes_zero == (est.p_value < 0.05)
+    assert disagreements == 0
+
+
+def test_fieller_unbounded_when_control_mean_is_indistinguishable_from_zero() -> None:
+    from expcopilot.stats.frequentist import fieller_relative_ci
+
+    lo, hi = fieller_relative_ci(0.5, 0.01, 0.01, 0.01, 1.96)
+    assert lo == float("-inf") and hi == float("inf")
