@@ -1,0 +1,364 @@
+{
+  "describe": "criteo 'criteo-ad-uplift': 2 arms, 1,000,000 units. Primary visit (MDE 2% relative, alpha 0.05); guardrails: none; planned n 1,000,000.",
+  "srm": "Observed split control 15.01% / treatment 84.99%; chi2 = 0.1387, p = 0.71; SRM check passed.",
+  "visit": [
+    "treatment vs control: +30.2% (95% CI +26.8% to +33.9%), p < 0.0001; absolute +0.01128 (0.0373 -> 0.04858); better"
+  ],
+  "conversion": [
+    "treatment vs control: +38.4% (95% CI +24.1% to +55.9%), p < 0.0001; absolute +0.0008574 (0.002231 -> 0.003089); better"
+  ],
+  "uplift": {
+    "visit|t": {
+      "qini": 0.0517414,
+      "n_train": 350059,
+      "n_test": 149941,
+      "summary": "Exploratory T-learner on visit (treatment vs control), 149,941 held-out units: Qini 0.0517; top-decile uplift +0.05661 vs bottom decile +0.02959 (overall +0.01206).",
+      "deciles": [
+        {
+          "decile": 1,
+          "n_treatment": 12921,
+          "n_control": 2074,
+          "rate_treatment": 0.235972,
+          "rate_control": 0.179364,
+          "uplift": 0.0566089
+        },
+        {
+          "decile": 2,
+          "n_treatment": 12685,
+          "n_control": 2309,
+          "rate_treatment": 0.0564446,
+          "rate_control": 0.0433088,
+          "uplift": 0.0131358
+        },
+        {
+          "decile": 3,
+          "n_treatment": 12721,
+          "n_control": 2273,
+          "rate_treatment": 0.0151718,
+          "rate_control": 0.0136384,
+          "uplift": 0.0015334
+        },
+        {
+          "decile": 4,
+          "n_treatment": 12697,
+          "n_control": 2297,
+          "rate_treatment": 0.00606442,
+          "rate_control": 0.00609491,
+          "uplift": -3.04817e-05
+        },
+        {
+          "decile": 5,
+          "n_treatment": 12679,
+          "n_control": 2315,
+          "rate_treatment": 0.00299708,
+          "rate_control": 0.00215983,
+          "uplift": 0.000837255
+        },
+        {
+          "decile": 6,
+          "n_treatment": 12739,
+          "n_control": 2255,
+          "rate_treatment": 0.00156998,
+          "rate_control": 0.000886918,
+          "uplift": 0.000683064
+        },
+        {
+          "decile": 7,
+          "n_treatment": 12703,
+          "n_control": 2291,
+          "rate_treatment": 0.00102338,
+          "rate_control": 0.000872981,
+          "uplift": 0.000150399
+        },
+        {
+          "decile": 8,
+          "n_treatment": 12697,
+          "n_control": 2297,
+          "rate_treatment": 0.00126014,
+          "rate_control": 0.00043535,
+          "uplift": 0.00082479
+        },
+        {
+          "decile": 9,
+          "n_treatment": 12709,
+          "n_control": 2285,
+          "rate_treatment": 0.00771107,
+          "rate_control": 0.00875274,
+          "uplift": -0.00104166
+        },
+        {
+          "decile": 10,
+          "n_treatment": 12746,
+          "n_control": 2248,
+          "rate_treatment": 0.152362,
+          "rate_control": 0.122776,
+          "uplift": 0.0295857
+        }
+      ]
+    },
+    "visit|x": {
+      "qini": 0.0315673,
+      "n_train": 350059,
+      "n_test": 149941,
+      "summary": "Exploratory X-learner on visit (treatment vs control), 149,941 held-out units: Qini 0.0316; top-decile uplift +0.05111 vs bottom decile +0.03868 (overall +0.01206).",
+      "deciles": [
+        {
+          "decile": 1,
+          "n_treatment": 12931,
+          "n_control": 2064,
+          "rate_treatment": 0.239579,
+          "rate_control": 0.188469,
+          "uplift": 0.0511103
+        },
+        {
+          "decile": 2,
+          "n_treatment": 12674,
+          "n_control": 2320,
+          "rate_treatment": 0.0454474,
+          "rate_control": 0.0405172,
+          "uplift": 0.00493013
+        },
+        {
+          "decile": 3,
+          "n_treatment": 12648,
+          "n_control": 2346,
+          "rate_treatment": 0.0127293,
+          "rate_control": 0.0102302,
+          "uplift": 0.00249911
+        },
+        {
+          "decile": 4,
+          "n_treatment": 12687,
+          "n_control": 2307,
+          "rate_treatment": 0.00614803,
+          "rate_control": 0.00303424,
+          "uplift": 0.00311378
+        },
+        {
+          "decile": 5,
+          "n_treatment": 12765,
+          "n_control": 2229,
+          "rate_treatment": 0.0101841,
+          "rate_control": 0.0125617,
+          "uplift": -0.00237759
+        },
+        {
+          "decile": 6,
+          "n_treatment": 12657,
+          "n_control": 2337,
+          "rate_treatment": 0.00181718,
+          "rate_control": 0.0021395,
+          "uplift": -0.000322319
+        },
+        {
+          "decile": 7,
+          "n_treatment": 12714,
+          "n_control": 2280,
+          "rate_treatment": 0.00566305,
+          "rate_control": 0.00438596,
+          "uplift": 0.00127708
+        },
+        {
+          "decile": 8,
+          "n_treatment": 12701,
+          "n_control": 2293,
+          "rate_treatment": 0.00181088,
+          "rate_control": 0.00261666,
+          "uplift": -0.000805778
+        },
+        {
+          "decile": 9,
+          "n_treatment": 12739,
+          "n_control": 2255,
+          "rate_treatment": 0.000392495,
+          "rate_control": 0.0,
+          "uplift": 0.000392495
+        },
+        {
+          "decile": 10,
+          "n_treatment": 12781,
+          "n_control": 2213,
+          "rate_treatment": 0.156169,
+          "rate_control": 0.117488,
+          "uplift": 0.0386817
+        }
+      ]
+    },
+    "conversion|t": {
+      "qini": 0.0898043,
+      "n_train": 350059,
+      "n_test": 149941,
+      "summary": "Exploratory T-learner on conversion (treatment vs control), 149,941 held-out units: Qini 0.0898; top-decile uplift +0.003801 vs bottom decile +0.0002152 (overall +0.001016).",
+      "deciles": [
+        {
+          "decile": 1,
+          "n_treatment": 12918,
+          "n_control": 2077,
+          "rate_treatment": 0.0211333,
+          "rate_control": 0.0173327,
+          "uplift": 0.00380061
+        },
+        {
+          "decile": 2,
+          "n_treatment": 12712,
+          "n_control": 2282,
+          "rate_treatment": 0.00196665,
+          "rate_control": 0.0,
+          "uplift": 0.00196665
+        },
+        {
+          "decile": 3,
+          "n_treatment": 12706,
+          "n_control": 2288,
+          "rate_treatment": 0.00078703,
+          "rate_control": 0.000874126,
+          "uplift": -8.70961e-05
+        },
+        {
+          "decile": 4,
+          "n_treatment": 12721,
+          "n_control": 2273,
+          "rate_treatment": 7.86102e-05,
+          "rate_control": 0.000439947,
+          "uplift": -0.000361337
+        },
+        {
+          "decile": 5,
+          "n_treatment": 12736,
+          "n_control": 2258,
+          "rate_treatment": 0.00117776,
+          "rate_control": 0.0,
+          "uplift": 0.00117776
+        },
+        {
+          "decile": 6,
+          "n_treatment": 12713,
+          "n_control": 2281,
+          "rate_treatment": 0.00157319,
+          "rate_control": 0.000876808,
+          "uplift": 0.000696384
+        },
+        {
+          "decile": 7,
+          "n_treatment": 12723,
+          "n_control": 2271,
+          "rate_treatment": 0.00172915,
+          "rate_control": 0.000880669,
+          "uplift": 0.000848483
+        },
+        {
+          "decile": 8,
+          "n_treatment": 12641,
+          "n_control": 2353,
+          "rate_treatment": 0.000158215,
+          "rate_control": 0.0,
+          "uplift": 0.000158215
+        },
+        {
+          "decile": 9,
+          "n_treatment": 12728,
+          "n_control": 2266,
+          "rate_treatment": 7.85669e-05,
+          "rate_control": 0.0,
+          "uplift": 7.85669e-05
+        },
+        {
+          "decile": 10,
+          "n_treatment": 12699,
+          "n_control": 2295,
+          "rate_treatment": 0.00370108,
+          "rate_control": 0.00348584,
+          "uplift": 0.00021524
+        }
+      ]
+    },
+    "conversion|x": {
+      "qini": -0.0159353,
+      "n_train": 350059,
+      "n_test": 149941,
+      "summary": "Exploratory X-learner on conversion (treatment vs control), 149,941 held-out units: Qini -0.0159; top-decile uplift +0.003443 vs bottom decile +0.00463 (overall +0.001016).",
+      "deciles": [
+        {
+          "decile": 1,
+          "n_treatment": 12861,
+          "n_control": 2134,
+          "rate_treatment": 0.0160952,
+          "rate_control": 0.0126523,
+          "uplift": 0.00344288
+        },
+        {
+          "decile": 2,
+          "n_treatment": 12773,
+          "n_control": 2221,
+          "rate_treatment": 0.00133093,
+          "rate_control": 0.000450248,
+          "uplift": 0.000880685
+        },
+        {
+          "decile": 3,
+          "n_treatment": 12650,
+          "n_control": 2344,
+          "rate_treatment": 0.000632411,
+          "rate_control": 0.000426621,
+          "uplift": 0.00020579
+        },
+        {
+          "decile": 4,
+          "n_treatment": 12676,
+          "n_control": 2318,
+          "rate_treatment": 0.0,
+          "rate_control": 0.000431406,
+          "uplift": -0.000431406
+        },
+        {
+          "decile": 5,
+          "n_treatment": 12663,
+          "n_control": 2331,
+          "rate_treatment": 0.000394851,
+          "rate_control": 0.000429,
+          "uplift": -3.41493e-05
+        },
+        {
+          "decile": 6,
+          "n_treatment": 12682,
+          "n_control": 2312,
+          "rate_treatment": 0.000315408,
+          "rate_control": 0.000432526,
+          "uplift": -0.000117118
+        },
+        {
+          "decile": 7,
+          "n_treatment": 12732,
+          "n_control": 2262,
+          "rate_treatment": 0.000235627,
+          "rate_control": 0.000442087,
+          "uplift": -0.00020646
+        },
+        {
+          "decile": 8,
+          "n_treatment": 12708,
+          "n_control": 2286,
+          "rate_treatment": 0.000314762,
+          "rate_control": 0.0,
+          "uplift": 0.000314762
+        },
+        {
+          "decile": 9,
+          "n_treatment": 12724,
+          "n_control": 2270,
+          "rate_treatment": 0.000157183,
+          "rate_control": 0.0,
+          "uplift": 0.000157183
+        },
+        {
+          "decile": 10,
+          "n_treatment": 12828,
+          "n_control": 2166,
+          "rate_treatment": 0.0129404,
+          "rate_control": 0.00831025,
+          "uplift": 0.00463019
+        }
+      ]
+    }
+  }
+}

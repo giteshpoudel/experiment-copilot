@@ -1,0 +1,88 @@
+{
+  "experiment_id": "criteo",
+  "mode": "agent",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: SHIP\n\nShip the **treatment** arm. The primary metric CI excludes zero on the good side and there are no pre-registered guardrails to fail.\n\n## Primary result\n\n- Metric: **visit** (binary, higher is better) [r1]\n- Treatment vs control: **+30.2% (95% CI +26.8% to +33.9%), p < 0.0001; absolute +0.01128 (0.0373 -> 0.04858); better** [r3]\n- MDE was 2% relative, alpha 0.05, planned n 1,000,000 [r1]\n\n## Guardrails\n\nNone pre-registered [r1]. The guardrail condition is therefore satisfied vacuously.\n\n## Validity checks (SRM, peeking, novelty)\n\n- **SRM**: passed. Observed split control 15.01% / treatment 84.99%; chi2 = 0.1387, p = 0.71 [r2].\n- **Peeking**: no planned interim looks [r1], so no sequential boundary applies.\n- **Novelty**: no daily data available (has_daily = false) [r1], so daily_effects could not be run.\n\n## Caveats\n\n- This is a retrospective case study with placeholder dates [r1].\n- No daily-data novelty/decay check is possible, so a decaying effect cannot be ruled out.\n- No guardrails were pre-registered; the decision relies on the primary metric alone.\n\n## Exploratory findings\n\n- Secondary metric **conversion**: treatment vs control **+38.4% (95% CI +24.1% to +55.9%), p < 0.0001; absolute +0.0008574 (0.002231 -> 0.003089); better** [r4]. Not part of the ship rule.\n- No segments are available for segment_effects [r1].",
+  "decision": "ship",
+  "trace": [
+    {
+      "step": 1,
+      "label": "r1",
+      "tool": "describe_experiment",
+      "arguments": {
+        "experiment_id": "criteo"
+      },
+      "result_id": "r-34ebe106",
+      "method": "registry_lookup",
+      "summary": "criteo 'criteo-ad-uplift': 2 arms, 1,000,000 units. Primary visit (MDE 2% relative, alpha 0.05); guardrails: none; planned n 1,000,000.",
+      "is_error": false,
+      "latency_s": 0.2722392496652901
+    },
+    {
+      "step": 2,
+      "label": "r2",
+      "tool": "check_srm",
+      "arguments": {
+        "experiment_id": "criteo"
+      },
+      "result_id": "r-58844017",
+      "method": "chi_square_goodness_of_fit",
+      "summary": "Observed split control 15.01% / treatment 84.99%; chi2 = 0.1387, p = 0.71; SRM check passed.",
+      "is_error": false,
+      "latency_s": 0.030621541664004326
+    },
+    {
+      "step": 3,
+      "label": "r3",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "criteo",
+        "metric": "visit"
+      },
+      "result_id": "r-f0a1be82",
+      "method": "two_proportion_z",
+      "summary": "treatment vs control: +30.2% (95% CI +26.8% to +33.9%), p < 0.0001; absolute +0.01128 (0.0373 -> 0.04858); better",
+      "is_error": false,
+      "latency_s": 0.033479290548712015
+    },
+    {
+      "step": 4,
+      "label": "r4",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "criteo",
+        "metric": "conversion"
+      },
+      "result_id": "r-7b463988",
+      "method": "two_proportion_z",
+      "summary": "treatment vs control: +38.4% (95% CI +24.1% to +55.9%), p < 0.0001; absolute +0.0008574 (0.002231 -> 0.003089); better",
+      "is_error": false,
+      "latency_s": 0.01977745909243822
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 25583,
+    "cache_hit_tokens": 23296,
+    "cache_miss_tokens": 2287,
+    "output_tokens": 2241,
+    "reasoning_tokens": 1595,
+    "cost_usd": 0.006459,
+    "requests": 5
+  },
+  "latency_s": 24.29082916583866,
+  "turns": 5,
+  "tool_calls": 4,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": [],
+  "sources": [
+    "[r1] describe_experiment result_id=r-34ebe106\n{\"result_id\":\"r-34ebe106\",\"method\":\"registry_lookup\",\"inputs\":{\"experiment_id\":\"criteo\"},\"experiment_id\":\"criteo\",\"name\":\"criteo-ad-uplift\",\"description\":\"Criteo uplift dataset v2.1: users randomly targeted by advertising (treatment) or held out (control) at a planned 85/15 split. This is a seeded random sample of 1,000,000 users. The plan is retrospective, written for this case study; dates are placeholders.\",\"status\":\"complete\",\"unit\":\"user\",\"start_date\":\"2018-01-01\",\"end_date\":\"2018-01-14\",\"has_daily\":false,\"arms\":[{\"name\":\"control\",\"is_control\":true,\"expected_share\":0.15000000000000002,\"observed_n\":150133},{\"name\":\"treatment\",\"is_control\":false,\"expected_share\":0.85,\"observed_n\":849867}],\"n_total\":1000000,\"metrics\":[{\"name\":\"visit\",\"type\":\"binary\",\"higher_is_better\":true,\"columns\":[\"visit\"],\"default_method\":\"two_proportion_z\",\"description\":\"User visited the advertiser's site\"},{\"name\":\"conversion\",\"type\":\"binary\",\"higher_is_better\":true,\"columns\":[\"conversion\"],\"default_method\":\"two_proportion_z\",\"description\":\"User converted on the advertiser's site\"}],\"covariates\":[\"f0\",\"f1\",\"f2\",\"f3\",\"f4\",\"f5\",\"f6\",\"f7\",\"f8\",\"f9\",\"f10\",\"f11\"],\"segments\":[],\"plan\":{\"primary_metric\":\"visit\",\"secondary_metrics\":[\"conversion\"],\"guardrails\":[],\"baseline\":null,\"mde\":0.02,\"alpha\":0.05,\"power\":0.8,\"sides\":2,\"multiple_testing\":\"holm\",\"planned_n_total\":1000000,\"planned_looks\":[],\"primary_covariate\":null,\"decision_rule\":{\"srm_alpha\":0.001,\"ship_requires\":\"primary_ci_excludes_zero\",\"guardrail_check\":\"no_significant_harm\",\"extend_if_underpowered\":true}},\"decision_rule_text\":\"invalid if SRM p < 0.001; ship if the primary CI excludes zero on the good side (after multiple-testing adjustment across arms; with interim looks, only if the O'Brien-Fleming boundary was crossed) and no guardrail shows statistically significant harm; extend if inconclusive and n < planned n; otherwise don't ship\",\"summary\":\"criteo 'criteo-ad-uplift': 2 arms, 1,000,000 units. Primary visit (MDE 2% relative, alpha 0.05); guardrails: none; planned n 1,000,000.\"}",
+    "[r2] check_srm result_id=r-58844017\n{\"result_id\":\"r-58844017\",\"method\":\"chi_square_goodness_of_fit\",\"inputs\":{\"experiment_id\":\"criteo\"},\"experiment_id\":\"criteo\",\"arms\":[{\"arm\":\"control\",\"expected_share\":0.15000000000000002,\"observed_share\":0.150133,\"observed\":150133,\"expected\":150000.0},{\"arm\":\"treatment\",\"expected_share\":0.85,\"observed_share\":0.849867,\"observed\":849867,\"expected\":850000.0}],\"chi2\":0.138737,\"df\":1,\"p_value\":0.70954,\"alpha\":0.001,\"passed\":true,\"summary\":\"Observed split control 15.01% / treatment 84.99%; chi2 = 0.1387, p = 0.71; SRM check passed.\"}",
+    "[r3] analyze_metric result_id=r-f0a1be82\n{\"result_id\":\"r-f0a1be82\",\"method\":\"two_proportion_z\",\"inputs\":{\"experiment_id\":\"criteo\",\"metric\":\"visit\",\"method\":\"auto\",\"cuped_covariate\":null,\"arms\":[\"treatment\"]},\"experiment_id\":\"criteo\",\"metric\":\"visit\",\"metric_type\":\"binary\",\"role\":\"primary\",\"alpha\":0.05,\"cuped_covariate\":null,\"comparisons\":[{\"result_id\":\"r-f0a1be82.treatment\",\"arm\":\"treatment\",\"control\":\"control\",\"n_control\":150133,\"n_treatment\":849867,\"mean_control\":0.0373003,\"mean_treatment\":0.0485782,\"abs_effect\":0.0112779,\"abs_ci\":{\"low\":0.010216,\"high\":0.0123399},\"rel_effect\":0.302355,\"rel_ci\":{\"low\":0.267553,\"high\":0.338879},\"p_value\":3.16052e-96,\"significant\":true,\"direction\":\"better\",\"variance_reduction\":null,\"guardrail\":null,\"summary\":\"treatment vs control: +30.2% (95% CI +26.8% to +33.9%), p < 0.0001; absolute +0.01128 (0.0373 -> 0.04858); better\"}],\"notes\":[]}",
+    "[r4] analyze_metric result_id=r-7b463988\n{\"result_id\":\"r-7b463988\",\"method\":\"two_proportion_z\",\"inputs\":{\"experiment_id\":\"criteo\",\"metric\":\"conversion\",\"method\":\"auto\",\"cuped_covariate\":null,\"arms\":[\"treatment\"]},\"experiment_id\":\"criteo\",\"metric\":\"conversion\",\"metric_type\":\"binary\",\"role\":\"secondary\",\"alpha\":0.05,\"cuped_covariate\":null,\"comparisons\":[{\"result_id\":\"r-7b463988.treatment\",\"arm\":\"treatment\",\"control\":\"control\",\"n_control\":150133,\"n_treatment\":849867,\"mean_control\":0.00223135,\"mean_treatment\":0.00308872,\"abs_effect\":0.000857364,\"abs_ci\":{\"low\":0.000591122,\"high\":0.00112361},\"rel_effect\":0.384235,\"rel_ci\":{\"low\":0.241318,\"high\":0.559193},\"p_value\":2.76212e-10,\"significant\":true,\"direction\":\"better\",\"variance_reduction\":null,\"guardrail\":null,\"summary\":\"treatment vs control: +38.4% (95% CI +24.1% to +55.9%), p < 0.0001; absolute +0.0008574 (0.002231 -> 0.003089); better\"}],\"notes\":[]}"
+  ]
+}

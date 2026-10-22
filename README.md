@@ -164,7 +164,9 @@ through arithmetic, and still gets a quarter of the decisions wrong. Most of its
 cautious "don't ship" calls on revenue tests, where it can't apply the CUPED adjustment the plan
 pre-registered.
 
-## On real data: the Hillstrom e-mail test
+## On real data
+
+### Hillstrom e-mail test
 
 Kevin Hillstrom's public [e-mail experiment](https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html)
 randomized 64,000 customers to a men's e-mail, a women's e-mail or no e-mail
@@ -181,8 +183,19 @@ randomized 64,000 customers to a men's e-mail, a women's e-mail or no e-mail
   (not significant) for returning ones (Cochran's Q p = 0.018), and only the women's e-mail is
   worth targeting: Qini 0.039 vs about 0 for the men's.
 
-The Criteo uplift case study (planned 85/15 split, T- vs X-learner) is wired up and tested,
-and runs once the dataset is downloaded.
+### Criteo ad-targeting uplift
+
+A seeded 1M-user sample of Criteo's [uplift dataset](https://ailab.criteo.com/criteo-uplift-prediction-dataset/),
+where ads went to 85% of users by design ([full report](reports/criteo.md)).
+
+- **Decision:** ship. Visits rose +30.2% (95% CI +26.8% to +33.9%), and the SRM check correctly
+  *passes* the planned 85/15 split (p = 0.71). The agent made 4 tool calls and cost $0.0065. The
+  no-tools baseline used up its 16,000-token budget reasoning and never wrote a readout.
+- **The lift is concentrated.** An uplift model's top decile gains +5.66 visit points against
+  +1.21 overall, and deciles 3–9 show close to none.
+- **The simple model won.** The T-learner beat the X-learner (visit Qini 0.052 vs 0.032), despite
+  the usual advice for unbalanced arms. Its ranking isn't monotone at the tails, which is why
+  the decile table is reported next to the Qini.
 
 ## Try the demo
 
@@ -297,9 +310,9 @@ the server, and ask *"Should we ship smoke-15?"*
 
 ## Limitations
 
-- **One real dataset so far.** Hillstrom is done; the Criteo uplift study waits on the dataset
-  (Criteo's own download link was down in October 2026). Plans for real data are
-  retrospective, written before the analysis ran.
+- **Real-data plans are retrospective,** written before the analysis ran but after the
+  experiments happened. Criteo's own download link was down in October 2026, so its file is
+  placed by hand.
 - **No interference.** Units are assumed independent: no network or marketplace effects and
   no long-term holdouts.
 - **The judge comes from the same lab as the agent.** It only scores explanation quality;

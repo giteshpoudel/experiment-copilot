@@ -1,0 +1,32 @@
+{
+  "experiment_id": "criteo",
+  "mode": "baseline",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "",
+  "decision": null,
+  "trace": [],
+  "usage": {
+    "prompt_tokens": 691,
+    "cache_hit_tokens": 0,
+    "cache_miss_tokens": 691,
+    "output_tokens": 16000,
+    "reasoning_tokens": 16000,
+    "cost_usd": 0.032136,
+    "requests": 1
+  },
+  "latency_s": 124.95849200012162,
+  "turns": 1,
+  "tool_calls": 0,
+  "truncated": false,
+  "finish_reason": "length",
+  "citation_issues": [
+    "no '## Decision:' heading found"
+  ],
+  "notes": [],
+  "sources": [
+    "Write a ship / don't-ship readout for experiment criteo.\n\nPre-registered plan (JSON):\n{\n \"primary_metric\": \"visit\",\n \"secondary_metrics\": [\n  \"conversion\"\n ],\n \"guardrails\": [],\n \"baseline\": null,\n \"mde\": 0.02,\n \"alpha\": 0.05,\n \"power\": 0.8,\n \"sides\": 2,\n \"multiple_testing\": \"holm\",\n \"planned_n_total\": 1000000,\n \"planned_looks\": [],\n \"primary_covariate\": null,\n \"decision_rule\": {\n  \"srm_alpha\": 0.001,\n  \"ship_requires\": \"primary_ci_excludes_zero\",\n  \"guardrail_check\": \"no_significant_harm\",\n  \"extend_if_underpowered\": true\n }\n}\n\nSummary table (per arm):\n| metric | type | arm | units | mean |\n| --- | --- | --- | --- | --- |\n| visit | binary | control (control) | 150133 | 0.0373003 |\n| visit | binary | treatment | 849867 | 0.0485782 |\n| conversion | binary | control (control) | 150133 | 0.00223135 |\n| conversion | binary | treatment | 849867 | 0.00308872 |\n\nDecision: apply the plan's decision rule exactly, in order:\n- INVALID if the SRM check failed;\n- SHIP if the primary metric's CI excludes zero on the good side (direction = \"better\") and\n  every guardrail passed (a guardrail fails only on statistically significant harm, as\n  reported by analyze_metric). With several treatment arms, an arm qualifies only if its\n  adjusted p-value (adjust_pvalues, plan's method) is below alpha; ship the best qualifying arm\n  whose guardrails pass, and name it. With planned interim looks, the primary counts as\n  significant only if sequential_test (obrien_fleming) crossed its boundary;\n- EXTEND if the primary result is inconclusive and the observed n is below the planned n;\n- DON'T SHIP otherwise.\nDo not override the rule with your own judgement; put concerns (e.g. a decaying daily effect)\nunder Caveats.\n\nReadout format:\n## Decision: <SHIP | DON'T SHIP | EXTEND | INVALID>\n## Primary result\n## Guardrails\n## Validity checks (SRM, peeking, novelty)\n## Caveats\n## Exploratory findings\n\nUse only the numbers in the table; do not invent statistics you cannot compute."
+  ]
+}

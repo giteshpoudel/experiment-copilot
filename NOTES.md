@@ -369,3 +369,21 @@ Running log for the README's "what the evals caught" section. Newest last.
   identical to the committed file, and the MCP server serves 12 tools over stdio.
 - **Found while testing the demo:** Streamlit's AppTest applies a selectbox `format_func`
   twice when selecting by index, so the selector now shows plain ids with a caption.
+
+### Criteo case study (2026-10-22)
+
+- The user downloaded `criteo-research-uplift-v2.1.csv.gz` (296 MB) from the
+  `jszymon/uplift_sklearn_data` GitHub mirror after Criteo's own link returned 404. Its SHA-256
+  matches the value libuplift publishes (`2716e1bf…`). The loader took 12 s to sample 1M users.
+- **SRM passes on the planned 85/15 split** (observed 15.01% / 84.99%, p = 0.71). The agent ships:
+  visit +30.2% (95% CI +26.8% to +33.9%); conversion +38.4%. 4 tool calls, $0.0065, 24 s.
+- **The baseline hit max_tokens (16,000) while reasoning and returned no text** ($0.0321, 125 s).
+  Reported as is; it was not rerun with a larger budget, so it stays comparable with the eval.
+- **Uplift, held-out 30% (149,941 users):** T-learner visit Qini 0.0517 (top decile +5.66 points
+  vs +1.21 overall; deciles 3–9 ≈ 0); X-learner 0.0316. Conversion: T 0.0898, X −0.0159. The
+  T-learner wins despite the usual advice that the X-learner is better for unbalanced arms; at a
+  0.3% conversion rate the X-learner's second stage fits very noisy imputed effects.
+- **Caveat: the ranking isn't monotone.** The bottom decile also has large real uplift (+2.96
+  points, T, visit). Extreme feature values get extreme predictions in both directions. The
+  report shows deciles next to the Qini for this reason.
+- Phase 6 "Done when" is now met: both case studies have a readout and website numbers.
