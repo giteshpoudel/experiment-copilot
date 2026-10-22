@@ -16,13 +16,14 @@ dependencies = [
   "pyarrow>=15",
   "pydantic>=2.6,<3",
   "python-dotenv>=1.0",
+  "scikit-learn>=1.4",
   "scipy>=1.11",
   "statsmodels>=0.14",
   "typer>=0.12",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "ruff>=0.6", "scikit-uplift>=0.5"]
 
 [project.scripts]
 expc = "expcopilot.cli:app"
@@ -37,6 +38,7 @@ markers = [
   "live: calls the real LLM API and costs money (run with -m live)",
 ]
 addopts = "-m 'not live'"
+filterwarnings = ["ignore:Function stable_cumsum is deprecated:FutureWarning"]
 
 [tool.ruff]
 line-length = 100

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 from expcopilot.models import Experiment
 from expcopilot.simulate import SUITES, run_suite
-from expcopilot.store import ExperimentNotFoundError, Store, TruthStore
+from expcopilot.store import ExperimentExistsError, ExperimentNotFoundError, Store, TruthStore
 
 app = typer.Typer(help="Experimentation Copilot", no_args_is_help=True, add_completion=False)
 
@@ -268,6 +268,35 @@ def eval_(
         s["judge_cost_usd"] for s in summary.values()
     )
     typer.echo(f"\nTotal spend ${spent:.3f}; results in {out}")
+
+
+@app.command()
+def load(
+    dataset: Annotated[str, typer.Argument(help="hillstrom | criteo")],
+    sample: Annotated[int, typer.Option(help="Criteo: users to sample (0 = all)")] = 1_000_000,
+    overwrite: Annotated[bool, typer.Option(help="Replace the experiment if it exists")] = False,
+    data_dir: DataDir = None,
+) -> None:
+    """Load a public dataset into the store as a real-data case study."""
+    from expcopilot.datasets import DatasetError, criteo, hillstrom
+
+    store = Store(data_dir)
+    try:
+        if dataset == "hillstrom":
+            exp, notes = hillstrom.load(store, store.data_dir, overwrite=overwrite), []
+        elif dataset == "criteo":
+            exp, notes = criteo.load(
+                store, store.data_dir, sample=sample or None, overwrite=overwrite
+            )
+        else:
+            raise typer.BadParameter("choose hillstrom or criteo")
+    except (DatasetError, ExperimentExistsError) as e:
+        typer.echo(str(e), err=True)
+        raise typer.Exit(1) from None
+    for note in notes:
+        typer.echo(f"warning: {note}", err=True)
+    counts = store.arm_counts(exp.experiment_id)
+    typer.echo(f"Loaded {exp.experiment_id}: " + ", ".join(f"{k} {v:,}" for k, v in counts.items()))
 
 
 @app.command("list")

@@ -45,6 +45,8 @@ from expcopilot.results import (
     SequentialResult,
     SRMArm,
     SRMCheckResult,
+    UpliftDecile,
+    UpliftModelResult,
     fmt_num,
     fmt_p,
     fmt_pct,
@@ -52,7 +54,7 @@ from expcopilot.results import (
     fmt_signed,
     sig,
 )
-from expcopilot.stats import bayesian, hte, power, sequential, time_effects
+from expcopilot.stats import bayesian, hte, power, sequential, time_effects, uplift
 from expcopilot.stats.cuped import cuped
 from expcopilot.stats.frequentist import (
     EffectEstimate,
@@ -82,6 +84,8 @@ METHOD_NAMES = {
 }
 BOOTSTRAP_RESAMPLES = 2000
 MAX_DAYS = 60
+MAX_FEATURES = 30
+MAX_UPLIFT_ROWS = 500_000  # larger experiments are subsampled (seeded) before fitting
 
 
 class AnalysisError(ValueError):
@@ -928,6 +932,87 @@ class Analyzer:
             f"{fmt_pct(ests[0].rel_effect)}, day {days} {fmt_pct(ests[-1].rel_effect)}; "
             f"trend {fmt_signed(trend.slope_per_day * 100, 3)} percentage points of lift per day, "
             f"{fmt_p(trend.slope_p_value)}: {pattern}.",
+        )
+
+    def uplift_model(
+        self,
+        experiment_id: str,
+        outcome: str,
+        features: list[str] | None = None,
+        learner: Literal["t", "x"] = "t",
+        arm: str | None = None,
+    ) -> UpliftModelResult:
+        loaded = self.load(experiment_id)
+        exp = loaded.experiment
+        m = self._metric(exp, outcome)
+        if m.type is MetricType.RATIO:
+            raise AnalysisError("uplift models need a binary or continuous outcome, not a ratio")
+        arm = self._one_arm(exp, arm)
+        allowed = [*exp.covariates, *exp.segments]
+        features = list(dict.fromkeys(features or allowed))
+        bad = [f for f in features if f not in allowed]
+        if bad:
+            raise AnalysisError(
+                f"unknown features {bad}; pre-treatment features: {_choices(allowed)}"
+            )
+        if len(features) > MAX_FEATURES:
+            raise AnalysisError(f"at most {MAX_FEATURES} features")
+        inputs = {
+            "experiment_id": experiment_id,
+            "outcome": outcome,
+            "features": features,
+            "learner": learner,
+            "arm": arm,
+        }
+        sel = np.flatnonzero((loaded.arm == exp.control.name) | (loaded.arm == arm))
+        if sel.size > MAX_UPLIFT_ROWS:
+            sel = np.sort(np.random.default_rng(0).choice(sel, MAX_UPLIFT_ROWS, replace=False))
+        cols = []
+        for f in features:
+            v = loaded.cols[f][sel]
+            if f in exp.segments:  # one-hot encode categorical segments
+                v = v.astype(str)
+                cols.extend((v == level).astype(float) for level in sorted(set(v.tolist())))
+            else:
+                cols.append(v.astype(float))
+        x = np.column_stack(cols)
+        y = loaded.cols[m.column][sel].astype(float)
+        t = (loaded.arm[sel] == arm).astype(int)
+        res = uplift.fit_and_evaluate(x, y, t, learner=learner, seed=0)
+        top, bottom = res.deciles[0], res.deciles[-1]
+        q = None if np.isnan(res.qini_coefficient) else sig(res.qini_coefficient)
+        q_text = f"Qini {fmt_num(res.qini_coefficient, 3)}" if q is not None else "no Qini"
+        return UpliftModelResult(
+            result_id=self._rid("uplift_model", inputs, loaded.version),
+            method=res.learner,
+            inputs=inputs,
+            experiment_id=experiment_id,
+            outcome=outcome,
+            arm=arm,
+            learner=learner,
+            features=features,
+            n_train=res.n_train,
+            n_test=res.n_test,
+            qini_coefficient=q,
+            observed_ate_test=sig(res.observed_ate_test),
+            mean_predicted_uplift=sig(res.mean_predicted_uplift),
+            deciles=[
+                UpliftDecile(
+                    decile=d.decile,
+                    n_treatment=d.n_treatment,
+                    n_control=d.n_control,
+                    rate_treatment=sig(d.rate_treatment),
+                    rate_control=sig(d.rate_control),
+                    uplift=sig(d.uplift),
+                )
+                for d in res.deciles
+            ],
+            summary=(
+                f"Exploratory {learner.upper()}-learner on {outcome} ({arm} vs "
+                f"{exp.control.name}), {res.n_test:,} held-out units: {q_text}; "
+                f"top-decile uplift {fmt_signed(top.uplift)} vs bottom decile "
+                f"{fmt_signed(bottom.uplift)} (overall {fmt_signed(res.observed_ate_test)})."
+            ),
         )
 
     def calculate(self, operation: Operation, a: float, b: float) -> CalculateResult:

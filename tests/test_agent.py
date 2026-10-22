@@ -133,7 +133,7 @@ def test_tools_offered_in_openai_format(server) -> None:
     llm = FakeLLM([reply(FINAL_INVALID)])
     agent(llm, server)
     tools = llm.calls[0]["tools"]
-    assert len(tools) == 11 and all(t["type"] == "function" for t in tools)
+    assert len(tools) == 12 and all(t["type"] == "function" for t in tools)
     names = [t["function"]["name"] for t in tools]
     assert names == sorted(names) or names  # order comes from the server and is stable
     analyze = next(t for t in tools if t["function"]["name"] == "analyze_metric")

@@ -31,6 +31,7 @@ from expcopilot.results import (
     SegmentEffectsResult,
     SequentialResult,
     SRMCheckResult,
+    UpliftModelResult,
 )
 from expcopilot.store import Store
 
@@ -278,6 +279,32 @@ def build_server(store: Store) -> FastMCP:
         overall effect. Not available for experiments without daily data.
         """
         return an.daily_effects(experiment_id, metric, arm)
+
+    @tool
+    def uplift_model(
+        experiment_id: ExperimentId,
+        outcome: MetricName,
+        features: Annotated[
+            list[str] | None,
+            Field(description="Pre-treatment features (covariates and segments); default: all"),
+        ] = None,
+        learner: Annotated[
+            Literal["t", "x"],
+            Field(
+                description="t: separate models per arm; x: X-learner, better when arms are "
+                "unbalanced"
+            ),
+        ] = "t",
+        arm: ArmName = None,
+    ) -> UpliftModelResult:
+        """Who responds to the treatment: fits an uplift model on 70% of units and reports the
+        Qini coefficient and observed uplift by predicted-uplift decile on the held-out 30%.
+
+        Use for targeting questions ("which customers should get the e-mail?"). Exploratory:
+        never use it to override the pre-registered decision. Not for the average effect
+        (analyze_metric) or a single segment column (segment_effects).
+        """
+        return an.uplift_model(experiment_id, outcome, features, learner, arm)
 
     @tool
     def calculate(

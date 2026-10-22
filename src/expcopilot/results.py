@@ -295,3 +295,28 @@ class CalculateResult(ToolResult):
     b: float
     value: float
     summary: str
+
+
+class UpliftDecile(Model):
+    decile: int
+    n_treatment: int
+    n_control: int
+    rate_treatment: float | None
+    rate_control: float | None
+    uplift: float | None
+
+
+class UpliftModelResult(ToolResult):
+    experiment_id: str
+    outcome: str
+    arm: str
+    learner: str
+    features: list[str]
+    n_train: int
+    n_test: int
+    qini_coefficient: float | None
+    observed_ate_test: float
+    mean_predicted_uplift: float
+    deciles: list[UpliftDecile]
+    exploratory: bool = True
+    summary: str

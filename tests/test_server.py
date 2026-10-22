@@ -30,6 +30,7 @@ TOOLS = {
     "bayesian_ab",
     "segment_effects",
     "daily_effects",
+    "uplift_model",
     "calculate",
 }
 TRUTH_WORDS = ("knob", "drop_share", "true_effect", "initial_relative", "effect:", "bug:")
@@ -319,3 +320,25 @@ def test_read_only_store_refuses_writes(data_dir: Path, tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         Store(tmp_path / "missing", read_only=True)
     assert not (tmp_path / "missing").exists()
+
+
+def test_uplift_model_finds_the_segment_with_the_effect(server) -> None:
+    """smoke-14: the whole simulated effect is on iOS, so ranking by platform should work."""
+    out = R.UpliftModelResult.model_validate(
+        call(
+            server,
+            "uplift_model",
+            experiment_id="smoke-14",
+            outcome="conversion",
+            features=["platform"],
+        )
+    )
+    assert out.exploratory and len(out.deciles) == 10
+    assert out.qini_coefficient is not None and out.qini_coefficient > 0
+    assert "unknown features" in call_error(
+        server,
+        "uplift_model",
+        experiment_id="smoke-14",
+        outcome="conversion",
+        features=["converted"],
+    )
