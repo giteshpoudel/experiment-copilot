@@ -1,0 +1,442 @@
+{
+  "describe": "hillstrom 'hillstrom-email-test': 3 arms, 64,000 units. Primary spend (MDE 15% relative, alpha 0.05); guardrails: none; planned n 64,000.",
+  "srm": "Observed split no_email 33.29% / mens_email 33.29% / womens_email 33.42%; chi2 = 0.2025, p = 0.9; SRM check passed.",
+  "cuped": {
+    "spend|history": {
+      "mens_email": {
+        "variance_reduction": 0.000433956,
+        "ci_width_ratio": 0.9997997787027767,
+        "summary": "mens_email vs no_email: +117% (95% CI +64% to +197%), p < 0.0001; absolute +0.7674 (0.654 -> 1.421); better; CUPED variance reduction 0.0434%"
+      },
+      "womens_email": {
+        "variance_reduction": 0.00037807,
+        "ci_width_ratio": 0.9998121003462442,
+        "summary": "womens_email vs no_email: +64.7% (95% CI +22.2% to +127%), p = 0.0012; absolute +0.4227 (0.6536 -> 1.076); better; CUPED variance reduction 0.0378%"
+      }
+    },
+    "spend|recency": {
+      "mens_email": {
+        "variance_reduction": 0.000274672,
+        "ci_width_ratio": 0.9998665191351845,
+        "summary": "mens_email vs no_email: +118% (95% CI +64.7% to +198%), p < 0.0001; absolute +0.7715 (0.6519 -> 1.423); better; CUPED variance reduction 0.0275%"
+      },
+      "womens_email": {
+        "variance_reduction": 0.000254408,
+        "ci_width_ratio": 0.9998727762761029,
+        "summary": "womens_email vs no_email: +65.2% (95% CI +22.6% to +128%), p = 0.0011; absolute +0.4255 (0.6522 -> 1.078); better; CUPED variance reduction 0.0254%"
+      }
+    },
+    "visit|history": {
+      "mens_email": {
+        "variance_reduction": 0.00444153,
+        "ci_width_ratio": 0.9978300344331346,
+        "summary": "mens_email vs no_email: +71.9% (95% CI +63.9% to +80.5%), p < 0.0001; absolute +0.07641 (0.1063 -> 0.1827); better; CUPED variance reduction 0.444%"
+      },
+      "womens_email": {
+        "variance_reduction": 0.00400363,
+        "ci_width_ratio": 0.9980439480699763,
+        "summary": "womens_email vs no_email: +42.4% (95% CI +35.5% to +49.8%), p < 0.0001; absolute +0.0451 (0.1062 -> 0.1513); better; CUPED variance reduction 0.4%"
+      }
+    },
+    "visit|recency": {
+      "mens_email": {
+        "variance_reduction": 0.00655194,
+        "ci_width_ratio": 0.9967751900603525,
+        "summary": "mens_email vs no_email: +72.4% (95% CI +64.4% to +80.9%), p < 0.0001; absolute +0.07678 (0.1061 -> 0.1829); better; CUPED variance reduction 0.655%"
+      },
+      "womens_email": {
+        "variance_reduction": 0.00530864,
+        "ci_width_ratio": 0.9973971889640814,
+        "summary": "womens_email vs no_email: +42.7% (95% CI +35.8% to +50.1%), p < 0.0001; absolute +0.04536 (0.1061 -> 0.1515); better; CUPED variance reduction 0.531%"
+      }
+    },
+    "conversion|history": {
+      "mens_email": {
+        "variance_reduction": 0.000880822,
+        "ci_width_ratio": 0.9996149232478314,
+        "summary": "mens_email vs no_email: +118% (95% CI +77.5% to +173%), p < 0.0001; absolute +0.006784 (0.005737 -> 0.01252); better; CUPED variance reduction 0.0881%"
+      },
+      "womens_email": {
+        "variance_reduction": 0.000674688,
+        "ci_width_ratio": 0.9997147074510974,
+        "summary": "womens_email vs no_email: +54% (95% CI +23.2% to +94.8%), p = 0.00017; absolute +0.003097 (0.005733 -> 0.00883); better; CUPED variance reduction 0.0675%"
+      }
+    },
+    "conversion|recency": {
+      "mens_email": {
+        "variance_reduction": 0.000668312,
+        "ci_width_ratio": 0.9997229663653462,
+        "summary": "mens_email vs no_email: +119% (95% CI +78.3% to +175%), p < 0.0001; absolute +0.006822 (0.005718 -> 0.01254); better; CUPED variance reduction 0.0668%"
+      },
+      "womens_email": {
+        "variance_reduction": 0.000655835,
+        "ci_width_ratio": 0.9997271114749625,
+        "summary": "womens_email vs no_email: +54.6% (95% CI +23.6% to +95.6%), p = 0.00015; absolute +0.003122 (0.00572 -> 0.008843); better; CUPED variance reduction 0.0656%"
+      }
+    }
+  },
+  "segments": {
+    "spend|mens_email|history_segment": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.51: no evidence the effect differs across levels. history_segment=1) $0 - $100: +104% (+16.9% to +310%), p = 0.066 adjusted; history_segment=2) $100 - $200: +167% (+37.8% to +471%), p = 0.045 adjusted; history_segment=3) $200 - $350: +57.5% (-13.7% to +235%), p = 0.27 adjusted; history_segment=4) $350 - $500: +155% (+30.1% to +483%), p = 0.056 adjusted; history_segment=5) $500 - $750: +205% (+17% to +1,028%), p = 0.084 adjusted; history_segment=6) $750 - $1,000: +439% (unbounded to unbounded), p = 0.066 adjusted; history_segment=7) $1,000 +: +60.9% (unbounded to unbounded), p = 0.49 adjusted",
+    "spend|mens_email|channel": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.33: no evidence the effect differs across levels. channel=Multichannel: +196% (+47.5% to +712%), p = 0.0076 adjusted; channel=Phone: +87.5% (+20.3% to +213%), p = 0.0076 adjusted; channel=Web: +127% (+48.5% to +272%), p = 0.00071 adjusted",
+    "spend|mens_email|zip_code": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.98: no evidence the effect differs across levels. zip_code=Rural: +98.5% (+5.31% to +305%), p = 0.036 adjusted; zip_code=Surburban: +120% (+42.9% to +268%), p = 0.0014 adjusted; zip_code=Urban: +124% (+42.3% to +288%), p = 0.0014 adjusted",
+    "spend|mens_email|newbie": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.19: no evidence the effect differs across levels. newbie=0: +61.8% (+12.8% to +140%), p = 0.0094 adjusted; newbie=1: +258% (+126% to +551%), p < 0.0001 adjusted",
+    "spend|womens_email|history_segment": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.042: effects differ across levels. history_segment=1) $0 - $100: +121% (+28.2% to +342%), p = 0.036 adjusted; history_segment=2) $100 - $200: +108% (+8.22% to +346%), p = 0.15 adjusted; history_segment=3) $200 - $350: -34.6% (-71.8% to +46.7%), p = 0.79 adjusted; history_segment=4) $350 - $500: -9.99% (-66.9% to +118%), p = 0.8 adjusted; history_segment=5) $500 - $750: +239% (+40.2% to +1,144%), p = 0.071 adjusted; history_segment=6) $750 - $1,000: +185% (unbounded to unbounded), p = 0.75 adjusted; history_segment=7) $1,000 +: +116% (unbounded to unbounded), p = 0.79 adjusted",
+    "spend|womens_email|channel": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.17: no evidence the effect differs across levels. channel=Multichannel: +188% (+32.4% to +700%), p = 0.035 adjusted; channel=Phone: +36.1% (-15% to +130%), p = 0.2 adjusted; channel=Web: +62% (+2.99% to +169%), p = 0.075 adjusted",
+    "spend|womens_email|zip_code": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.21: no evidence the effect differs across levels. zip_code=Rural: +67.1% (-12.4% to +242%), p = 0.22 adjusted; zip_code=Surburban: +26.5% (-23.4% to +117%), p = 0.35 adjusted; zip_code=Urban: +113% (+33.9% to +269%), p = 0.0055 adjusted",
+    "spend|womens_email|newbie": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.018: effects differ across levels. newbie=0: +12.2% (-24.9% to +69.3%), p = 0.57 adjusted; newbie=1: +197% (+85.3% to +442%), p < 0.0001 adjusted",
+    "visit|mens_email|history_segment": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.15: no evidence the effect differs across levels. history_segment=1) $0 - $100: +80.8% (+65.3% to +98.2%), p < 0.0001 adjusted; history_segment=2) $100 - $200: +76% (+57.8% to +97%), p < 0.0001 adjusted; history_segment=3) $200 - $350: +66.8% (+51.1% to +84.7%), p < 0.0001 adjusted; history_segment=4) $350 - $500: +59.4% (+40.7% to +81.4%), p < 0.0001 adjusted; history_segment=5) $500 - $750: +90.3% (+61.6% to +126%), p < 0.0001 adjusted; history_segment=6) $750 - $1,000: +39.8% (+10.9% to +78.6%), p = 0.0047 adjusted; history_segment=7) $1,000 +: +58.5% (+22.7% to +110%), p = 0.00079 adjusted",
+    "visit|mens_email|channel": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.8: no evidence the effect differs across levels. channel=Multichannel: +64.5% (+45.5% to +86.9%), p < 0.0001 adjusted; channel=Phone: +86.7% (+72.5% to +103%), p < 0.0001 adjusted; channel=Web: +63.6% (+52.8% to +75.3%), p < 0.0001 adjusted",
+    "visit|mens_email|zip_code": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.72: no evidence the effect differs across levels. zip_code=Rural: +47.8% (+33.4% to +64.2%), p < 0.0001 adjusted; zip_code=Surburban: +75.1% (+62.6% to +88.8%), p < 0.0001 adjusted; zip_code=Urban: +82.3% (+68.5% to +97.5%), p < 0.0001 adjusted",
+    "visit|mens_email|newbie": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.71: no evidence the effect differs across levels. newbie=0: +58.2% (+48.9% to +68.2%), p < 0.0001 adjusted; newbie=1: +95.5% (+80.9% to +112%), p < 0.0001 adjusted",
+    "visit|womens_email|history_segment": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.53: no evidence the effect differs across levels. history_segment=1) $0 - $100: +55.1% (+41.4% to +70.6%), p < 0.0001 adjusted; history_segment=2) $100 - $200: +46.7% (+30.9% to +64.9%), p < 0.0001 adjusted; history_segment=3) $200 - $350: +28.6% (+15.7% to +43.2%), p < 0.0001 adjusted; history_segment=4) $350 - $500: +26.9% (+11.2% to +45.2%), p = 0.0012 adjusted; history_segment=5) $500 - $750: +60.4% (+35.4% to +91.5%), p < 0.0001 adjusted; history_segment=6) $750 - $1,000: +35.5% (+6.6% to +73.9%), p = 0.026 adjusted; history_segment=7) $1,000 +: +32.4% (+0.366% to +77.4%), p = 0.047 adjusted",
+    "visit|womens_email|channel": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.97: no evidence the effect differs across levels. channel=Multichannel: +36.6% (+20.1% to +56%), p < 0.0001 adjusted; channel=Phone: +51.2% (+39.2% to +64.5%), p < 0.0001 adjusted; channel=Web: +38.4% (+28.9% to +48.8%), p < 0.0001 adjusted",
+    "visit|womens_email|zip_code": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.16: no evidence the effect differs across levels. zip_code=Rural: +18.9% (+6.58% to +32.9%), p = 0.002 adjusted; zip_code=Surburban: +49.3% (+38.4% to +61.4%), p < 0.0001 adjusted; zip_code=Urban: +48.5% (+36.8% to +61.5%), p < 0.0001 adjusted",
+    "visit|womens_email|newbie": "Exploratory, not part of the pre-registered decision. Cochran's Q p = 0.11: no evidence the effect differs across levels. newbie=0: +30% (+22% to +38.6%), p < 0.0001 adjusted; newbie=1: +64% (+51.3% to +78%), p < 0.0001 adjusted"
+  },
+  "uplift": {
+    "visit|mens_email|t": {
+      "qini": -0.00782213,
+      "summary": "Exploratory T-learner on visit (mens_email vs no_email), 12,585 held-out units: Qini -0.00782; top-decile uplift +0.09146 vs bottom decile +0.0908 (overall +0.07323).",
+      "deciles": [
+        {
+          "decile": 1,
+          "n_treatment": 655,
+          "n_control": 604,
+          "rate_treatment": 0.230534,
+          "rate_control": 0.139073,
+          "uplift": 0.0914615
+        },
+        {
+          "decile": 2,
+          "n_treatment": 622,
+          "n_control": 637,
+          "rate_treatment": 0.188103,
+          "rate_control": 0.11146,
+          "uplift": 0.0766429
+        },
+        {
+          "decile": 3,
+          "n_treatment": 616,
+          "n_control": 643,
+          "rate_treatment": 0.165584,
+          "rate_control": 0.0933126,
+          "uplift": 0.0722718
+        },
+        {
+          "decile": 4,
+          "n_treatment": 659,
+          "n_control": 600,
+          "rate_treatment": 0.162367,
+          "rate_control": 0.126667,
+          "uplift": 0.0357006
+        },
+        {
+          "decile": 5,
+          "n_treatment": 613,
+          "n_control": 646,
+          "rate_treatment": 0.150082,
+          "rate_control": 0.0928793,
+          "uplift": 0.0572023
+        },
+        {
+          "decile": 6,
+          "n_treatment": 614,
+          "n_control": 644,
+          "rate_treatment": 0.135179,
+          "rate_control": 0.0916149,
+          "uplift": 0.0435642
+        },
+        {
+          "decile": 7,
+          "n_treatment": 615,
+          "n_control": 643,
+          "rate_treatment": 0.169106,
+          "rate_control": 0.0793157,
+          "uplift": 0.08979
+        },
+        {
+          "decile": 8,
+          "n_treatment": 617,
+          "n_control": 641,
+          "rate_treatment": 0.175041,
+          "rate_control": 0.0967239,
+          "uplift": 0.0783166
+        },
+        {
+          "decile": 9,
+          "n_treatment": 607,
+          "n_control": 651,
+          "rate_treatment": 0.202636,
+          "rate_control": 0.112135,
+          "uplift": 0.0905007
+        },
+        {
+          "decile": 10,
+          "n_treatment": 623,
+          "n_control": 635,
+          "rate_treatment": 0.221509,
+          "rate_control": 0.130709,
+          "uplift": 0.0908002
+        }
+      ]
+    },
+    "visit|mens_email|x": {
+      "qini": -0.0102353,
+      "summary": "Exploratory X-learner on visit (mens_email vs no_email), 12,585 held-out units: Qini -0.0102; top-decile uplift +0.07036 vs bottom decile +0.1017 (overall +0.07323).",
+      "deciles": [
+        {
+          "decile": 1,
+          "n_treatment": 653,
+          "n_control": 606,
+          "rate_treatment": 0.220521,
+          "rate_control": 0.150165,
+          "uplift": 0.0703557
+        },
+        {
+          "decile": 2,
+          "n_treatment": 634,
+          "n_control": 625,
+          "rate_treatment": 0.189274,
+          "rate_control": 0.1216,
+          "uplift": 0.0676744
+        },
+        {
+          "decile": 3,
+          "n_treatment": 640,
+          "n_control": 619,
+          "rate_treatment": 0.184375,
+          "rate_control": 0.101777,
+          "uplift": 0.0825979
+        },
+        {
+          "decile": 4,
+          "n_treatment": 633,
+          "n_control": 626,
+          "rate_treatment": 0.169036,
+          "rate_control": 0.110224,
+          "uplift": 0.0588127
+        },
+        {
+          "decile": 5,
+          "n_treatment": 608,
+          "n_control": 651,
+          "rate_treatment": 0.154605,
+          "rate_control": 0.093702,
+          "uplift": 0.0609033
+        },
+        {
+          "decile": 6,
+          "n_treatment": 610,
+          "n_control": 648,
+          "rate_treatment": 0.155738,
+          "rate_control": 0.0740741,
+          "uplift": 0.0816636
+        },
+        {
+          "decile": 7,
+          "n_treatment": 615,
+          "n_control": 643,
+          "rate_treatment": 0.147967,
+          "rate_control": 0.0777605,
+          "uplift": 0.070207
+        },
+        {
+          "decile": 8,
+          "n_treatment": 601,
+          "n_control": 657,
+          "rate_treatment": 0.156406,
+          "rate_control": 0.115677,
+          "uplift": 0.0407287
+        },
+        {
+          "decile": 9,
+          "n_treatment": 615,
+          "n_control": 643,
+          "rate_treatment": 0.19187,
+          "rate_control": 0.102644,
+          "uplift": 0.0892261
+        },
+        {
+          "decile": 10,
+          "n_treatment": 632,
+          "n_control": 626,
+          "rate_treatment": 0.227848,
+          "rate_control": 0.126198,
+          "uplift": 0.10165
+        }
+      ]
+    },
+    "visit|womens_email|t": {
+      "qini": 0.0387463,
+      "summary": "Exploratory T-learner on visit (womens_email vs no_email), 12,612 held-out units: Qini 0.0387; top-decile uplift +0.08432 vs bottom decile +0.01889 (overall +0.0419).",
+      "deciles": [
+        {
+          "decile": 1,
+          "n_treatment": 615,
+          "n_control": 647,
+          "rate_treatment": 0.204878,
+          "rate_control": 0.120556,
+          "uplift": 0.0843216
+        },
+        {
+          "decile": 2,
+          "n_treatment": 630,
+          "n_control": 632,
+          "rate_treatment": 0.168254,
+          "rate_control": 0.117089,
+          "uplift": 0.0511654
+        },
+        {
+          "decile": 3,
+          "n_treatment": 636,
+          "n_control": 625,
+          "rate_treatment": 0.147799,
+          "rate_control": 0.0944,
+          "uplift": 0.0533987
+        },
+        {
+          "decile": 4,
+          "n_treatment": 610,
+          "n_control": 651,
+          "rate_treatment": 0.15082,
+          "rate_control": 0.0829493,
+          "uplift": 0.0678704
+        },
+        {
+          "decile": 5,
+          "n_treatment": 627,
+          "n_control": 634,
+          "rate_treatment": 0.133971,
+          "rate_control": 0.108833,
+          "uplift": 0.0251385
+        },
+        {
+          "decile": 6,
+          "n_treatment": 611,
+          "n_control": 650,
+          "rate_treatment": 0.091653,
+          "rate_control": 0.0707692,
+          "uplift": 0.0208838
+        },
+        {
+          "decile": 7,
+          "n_treatment": 617,
+          "n_control": 644,
+          "rate_treatment": 0.126418,
+          "rate_control": 0.0885093,
+          "uplift": 0.0379088
+        },
+        {
+          "decile": 8,
+          "n_treatment": 642,
+          "n_control": 619,
+          "rate_treatment": 0.116822,
+          "rate_control": 0.11147,
+          "uplift": 0.00535232
+        },
+        {
+          "decile": 9,
+          "n_treatment": 650,
+          "n_control": 611,
+          "rate_treatment": 0.158462,
+          "rate_control": 0.104746,
+          "uplift": 0.0537152
+        },
+        {
+          "decile": 10,
+          "n_treatment": 607,
+          "n_control": 654,
+          "rate_treatment": 0.156507,
+          "rate_control": 0.137615,
+          "uplift": 0.0188927
+        }
+      ]
+    },
+    "visit|womens_email|x": {
+      "qini": 0.0405288,
+      "summary": "Exploratory X-learner on visit (womens_email vs no_email), 12,612 held-out units: Qini 0.0405; top-decile uplift +0.0847 vs bottom decile +0.0331 (overall +0.0419).",
+      "deciles": [
+        {
+          "decile": 1,
+          "n_treatment": 626,
+          "n_control": 636,
+          "rate_treatment": 0.186901,
+          "rate_control": 0.102201,
+          "uplift": 0.0846997
+        },
+        {
+          "decile": 2,
+          "n_treatment": 629,
+          "n_control": 633,
+          "rate_treatment": 0.155803,
+          "rate_control": 0.121643,
+          "uplift": 0.0341599
+        },
+        {
+          "decile": 3,
+          "n_treatment": 613,
+          "n_control": 648,
+          "rate_treatment": 0.138662,
+          "rate_control": 0.104938,
+          "uplift": 0.033724
+        },
+        {
+          "decile": 4,
+          "n_treatment": 623,
+          "n_control": 638,
+          "rate_treatment": 0.173355,
+          "rate_control": 0.103448,
+          "uplift": 0.0699065
+        },
+        {
+          "decile": 5,
+          "n_treatment": 612,
+          "n_control": 649,
+          "rate_treatment": 0.150327,
+          "rate_control": 0.0801233,
+          "uplift": 0.0702035
+        },
+        {
+          "decile": 6,
+          "n_treatment": 623,
+          "n_control": 638,
+          "rate_treatment": 0.110754,
+          "rate_control": 0.0799373,
+          "uplift": 0.0308171
+        },
+        {
+          "decile": 7,
+          "n_treatment": 637,
+          "n_control": 624,
+          "rate_treatment": 0.122449,
+          "rate_control": 0.088141,
+          "uplift": 0.034308
+        },
+        {
+          "decile": 8,
+          "n_treatment": 621,
+          "n_control": 640,
+          "rate_treatment": 0.149758,
+          "rate_control": 0.114062,
+          "uplift": 0.035696
+        },
+        {
+          "decile": 9,
+          "n_treatment": 630,
+          "n_control": 631,
+          "rate_treatment": 0.119048,
+          "rate_control": 0.126783,
+          "uplift": -0.00773527
+        },
+        {
+          "decile": 10,
+          "n_treatment": 631,
+          "n_control": 630,
+          "rate_treatment": 0.14897,
+          "rate_control": 0.115873,
+          "uplift": 0.0330969
+        }
+      ]
+    }
+  }
+}

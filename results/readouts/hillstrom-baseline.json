@@ -1,0 +1,30 @@
+{
+  "experiment_id": "hillstrom",
+  "mode": "baseline",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: DON'T SHIP\n\n## Primary result\n- Primary metric: `spend` (continuous; higher is better).\n- Observed total N: 21,306 + 21,307 + 21,387 = 64,000, matching planned N.\n- Point estimates vs control:\n  - `mens_email`: 1.42262 - 0.652789 = **+0.76983**\n  - `womens_email`: 1.07720 - 0.652789 = **+0.42441**\n- The summary table provides only means and counts, not standard deviations/variances or covariate-adjusted estimates for `history`. Therefore the primary metric CI cannot be computed from the supplied numbers.\n- Because the decision rule requires `primary_ci_excludes_zero`, no arm can be declared qualifying. The result is inconclusive from this table, but observed N is not below planned N, so EXTEND is not triggered.\n\n## Guardrails\n- No guardrails were pre-registered. Guardrail check passes by default.\n\n## Validity checks (SRM, peeking, novelty)\n- **SRM:** Passed. Assuming equal allocation, expected per arm = 21,333.33. Observed counts: 21,306 / 21,307 / 21,387. Chi-square \u2248 0.203, df = 2, p \u2248 0.90, well above the 0.001 SRM threshold.\n- **Peeking:** `planned_looks` is empty; no interim sequential boundary was applicable. No evidence of peeking from this table.\n- **Novelty:** Cannot be assessed from the provided counts and means.\n\n## Caveats\n- The primary CI could not be computed because continuous `spend` variance/SD is missing from the table. This is not evidence of no effect; a full-data analysis with proper standard errors could change the decision.\n- The plan specifies `primary_covariate: history`, but the table does not include adjusted estimates or errors.\n- Day-level effects or decay cannot be checked from these summary data.\n\n## Exploratory findings\n- Visit point estimates: control 10.62%, `mens_email` 18.28%, `womens_email` 15.14%.\n- Conversion point estimates: control 0.573%, `mens_email` 1.253%, `womens_email` 0.884%.\n- Spend point estimates are directionally higher in both treatment arms, with `mens_email` showing the largest point lift (+0.770 vs control), but primary significance cannot be established from this summary table.",
+  "decision": "dont_ship",
+  "trace": [],
+  "usage": {
+    "prompt_tokens": 794,
+    "cache_hit_tokens": 0,
+    "cache_miss_tokens": 794,
+    "output_tokens": 9620,
+    "reasoning_tokens": 9079,
+    "cost_usd": 0.019572,
+    "requests": 1
+  },
+  "latency_s": 74.1218047500588,
+  "turns": 1,
+  "tool_calls": 0,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": [],
+  "sources": [
+    "Write a ship / don't-ship readout for experiment hillstrom.\n\nPre-registered plan (JSON):\n{\n \"primary_metric\": \"spend\",\n \"secondary_metrics\": [\n  \"visit\",\n  \"conversion\"\n ],\n \"guardrails\": [],\n \"baseline\": null,\n \"mde\": 0.15,\n \"alpha\": 0.05,\n \"power\": 0.8,\n \"sides\": 2,\n \"multiple_testing\": \"holm\",\n \"planned_n_total\": 64000,\n \"planned_looks\": [],\n \"primary_covariate\": \"history\",\n \"decision_rule\": {\n  \"srm_alpha\": 0.001,\n  \"ship_requires\": \"primary_ci_excludes_zero\",\n  \"guardrail_check\": \"no_significant_harm\",\n  \"extend_if_underpowered\": true\n }\n}\n\nSummary table (per arm):\n| metric | type | arm | units | mean |\n| --- | --- | --- | --- | --- |\n| spend | continuous | no_email (control) | 21306 | 0.652789 |\n| spend | continuous | mens_email | 21307 | 1.42262 |\n| spend | continuous | womens_email | 21387 | 1.0772 |\n| visit | binary | no_email (control) | 21306 | 0.106167 |\n| visit | binary | mens_email | 21307 | 0.182757 |\n| visit | binary | womens_email | 21387 | 0.1514 |\n| conversion | binary | no_email (control) | 21306 | 0.00572609 |\n| conversion | binary | mens_email | 21307 | 0.0125311 |\n| conversion | binary | womens_email | 21387 | 0.00883714 |\n\nDecision: apply the plan's decision rule exactly, in order:\n- INVALID if the SRM check failed;\n- SHIP if the primary metric's CI excludes zero on the good side (direction = \"better\") and\n  every guardrail passed (a guardrail fails only on statistically significant harm, as\n  reported by analyze_metric). With several treatment arms, an arm qualifies only if its\n  adjusted p-value (adjust_pvalues, plan's method) is below alpha; ship the best qualifying arm\n  whose guardrails pass, and name it. With planned interim looks, the primary counts as\n  significant only if sequential_test (obrien_fleming) crossed its boundary;\n- EXTEND if the primary result is inconclusive and the observed n is below the planned n;\n- DON'T SHIP otherwise.\nDo not override the rule with your own judgement; put concerns (e.g. a decaying daily effect)\nunder Caveats.\n\nReadout format:\n## Decision: <SHIP | DON'T SHIP | EXTEND | INVALID>\n## Primary result\n## Guardrails\n## Validity checks (SRM, peeking, novelty)\n## Caveats\n## Exploratory findings\n\nUse only the numbers in the table; do not invent statistics you cannot compute."
+  ]
+}

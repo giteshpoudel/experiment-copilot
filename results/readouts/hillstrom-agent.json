@@ -1,0 +1,92 @@
+{
+  "experiment_id": "hillstrom",
+  "mode": "agent",
+  "model": "deepseek-v4-pro",
+  "models_seen": [
+    "deepseek-v4-pro"
+  ],
+  "text": "## Decision: SHIP\n\nShip **mens_email** (vs no_email).\n\n## Primary result\n\n- mens_email vs no_email: **+117% (95% CI +64% to +197%), p < 0.0001; absolute +0.7674 (0.654 -> 1.421); better** [r3]. Holm-adjusted p < 0.0001 [r4].\n- womens_email vs no_email: **+64.7% (95% CI +22.2% to +127%), p = 0.0012; absolute +0.4227 (0.6536 -> 1.076); better** [r3]. Holm-adjusted p = 0.0012 [r4].\n\nBoth treatment arms have CIs excluding zero on the good side [r3], and both Holm-adjusted p-values are below alpha 0.05 [r4]. The best qualifying arm is **mens_email**, with the larger point estimate (+117% vs +64.7%) [r3].\n\nAnalysis used the pre-registered primary covariate `history` for CUPED [r1].\n\n## Guardrails\n\nNo guardrails were pre-registered [r1], so there are no guardrail failures to block shipping.\n\n## Validity checks (SRM, peeking, novelty)\n\n- **SRM:** passed. Observed split no_email 33.29% / mens_email 33.29% / womens_email 33.42%; chi2 = 0.2025, p = 0.9 [r2].\n- **Peeking:** no planned interim looks [r1], so fixed-horizon p-values are valid.\n- **Novelty:** no daily data available (`has_daily = false`) [r1], so daily novelty/decay could not be checked.\n\n## Caveats\n\n- The plan is retrospective, written for this case study; dates are approximate [r1].\n- With no guardrails, the decision rests on the primary metric only [r1].\n- `womens_email` also qualifies under the decision rule, but the rule ships the best qualifying arm, which is `mens_email` [r3][r4].\n- No daily data means a decaying treatment effect cannot be ruled out [r1].\n\n## Exploratory findings\n\nNone run.",
+  "decision": "ship",
+  "trace": [
+    {
+      "step": 1,
+      "label": "r1",
+      "tool": "describe_experiment",
+      "arguments": {
+        "experiment_id": "hillstrom"
+      },
+      "result_id": "r-a75f0d36",
+      "method": "registry_lookup",
+      "summary": "hillstrom 'hillstrom-email-test': 3 arms, 64,000 units. Primary spend (MDE 15% relative, alpha 0.05); guardrails: none; planned n 64,000.",
+      "is_error": false,
+      "latency_s": 0.13459570799022913
+    },
+    {
+      "step": 2,
+      "label": "r2",
+      "tool": "check_srm",
+      "arguments": {
+        "experiment_id": "hillstrom"
+      },
+      "result_id": "r-631d5954",
+      "method": "chi_square_goodness_of_fit",
+      "summary": "Observed split no_email 33.29% / mens_email 33.29% / womens_email 33.42%; chi2 = 0.2025, p = 0.9; SRM check passed.",
+      "is_error": false,
+      "latency_s": 0.047423625364899635
+    },
+    {
+      "step": 3,
+      "label": "r3",
+      "tool": "analyze_metric",
+      "arguments": {
+        "experiment_id": "hillstrom",
+        "metric": "spend",
+        "cuped_covariate": "history"
+      },
+      "result_id": "r-d42f178c",
+      "method": "cuped_welch",
+      "summary": "mens_email vs no_email: +117% (95% CI +64% to +197%), p < 0.0001; absolute +0.7674 (0.654 -> 1.421); better; CUPED variance reduction 0.0434% | womens_email vs no_email: +64.7% (95% CI +22.2% to +127%), p = 0.0012; absolute +0.4227 (0.6536 -> 1.076); better; CUPED variance reduction 0.0378%",
+      "is_error": false,
+      "latency_s": 0.04494504118338227
+    },
+    {
+      "step": 4,
+      "label": "r4",
+      "tool": "adjust_pvalues",
+      "arguments": {
+        "result_ids": [
+          "r-d42f178c.mens_email",
+          "r-d42f178c.womens_email"
+        ],
+        "method": "holm"
+      },
+      "result_id": "r-bbcefd03",
+      "method": "holm",
+      "summary": "Holm over 2 comparisons: 2 significant at alpha 0.05. hillstrom spend: mens_email vs no_email: p < 0.0001 adjusted; hillstrom spend: womens_email vs no_email: p = 0.0012 adjusted",
+      "is_error": false,
+      "latency_s": 0.01434229128062725
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 25891,
+    "cache_hit_tokens": 20352,
+    "cache_miss_tokens": 5539,
+    "output_tokens": 3880,
+    "reasoning_tokens": 3129,
+    "cost_usd": 0.011786,
+    "requests": 5
+  },
+  "latency_s": 37.768382458016276,
+  "turns": 5,
+  "tool_calls": 4,
+  "truncated": false,
+  "finish_reason": "stop",
+  "citation_issues": [],
+  "notes": [],
+  "sources": [
+    "[r1] describe_experiment result_id=r-a75f0d36\n{\"result_id\":\"r-a75f0d36\",\"method\":\"registry_lookup\",\"inputs\":{\"experiment_id\":\"hillstrom\"},\"experiment_id\":\"hillstrom\",\"name\":\"hillstrom-email-test\",\"description\":\"MineThatData e-mail test (Kevin Hillstrom, 2008): customers randomized to a men's e-mail, a women's e-mail or no e-mail, outcomes tracked for two weeks. The plan is retrospective, written for this case study; dates are approximate.\",\"status\":\"complete\",\"unit\":\"customer\",\"start_date\":\"2008-03-01\",\"end_date\":\"2008-03-14\",\"has_daily\":false,\"arms\":[{\"name\":\"no_email\",\"is_control\":true,\"expected_share\":0.3333333333333333,\"observed_n\":21306},{\"name\":\"mens_email\",\"is_control\":false,\"expected_share\":0.3333333333333333,\"observed_n\":21307},{\"name\":\"womens_email\",\"is_control\":false,\"expected_share\":0.3333333333333333,\"observed_n\":21387}],\"n_total\":64000,\"metrics\":[{\"name\":\"spend\",\"type\":\"continuous\",\"higher_is_better\":true,\"columns\":[\"spend\"],\"default_method\":\"welch_t\",\"description\":\"Dollars spent in the two weeks after the e-mail\"},{\"name\":\"visit\",\"type\":\"binary\",\"higher_is_better\":true,\"columns\":[\"visit\"],\"default_method\":\"two_proportion_z\",\"description\":\"Visited the website in the two weeks after the e-mail\"},{\"name\":\"conversion\",\"type\":\"binary\",\"higher_is_better\":true,\"columns\":[\"conversion\"],\"default_method\":\"two_proportion_z\",\"description\":\"Purchased in the two weeks after the e-mail\"}],\"covariates\":[\"history\",\"recency\"],\"segments\":[\"history_segment\",\"channel\",\"zip_code\",\"newbie\",\"mens\",\"womens\"],\"plan\":{\"primary_metric\":\"spend\",\"secondary_metrics\":[\"visit\",\"conversion\"],\"guardrails\":[],\"baseline\":null,\"mde\":0.15,\"alpha\":0.05,\"power\":0.8,\"sides\":2,\"multiple_testing\":\"holm\",\"planned_n_total\":64000,\"planned_looks\":[],\"primary_covariate\":\"history\",\"decision_rule\":{\"srm_alpha\":0.001,\"ship_requires\":\"primary_ci_excludes_zero\",\"guardrail_check\":\"no_significant_harm\",\"extend_if_underpowered\":true}},\"decision_rule_text\":\"invalid if SRM p < 0.001; ship if the primary CI excludes zero on the good side (after multiple-testing adjustment across arms; with interim looks, only if the O'Brien-Fleming boundary was crossed) and no guardrail shows statistically significant harm; extend if inconclusive and n < planned n; otherwise don't ship\",\"summary\":\"hillstrom 'hillstrom-email-test': 3 arms, 64,000 units. Primary spend (MDE 15% relative, alpha 0.05); guardrails: none; planned n 64,000.\"}",
+    "[r2] check_srm result_id=r-631d5954\n{\"result_id\":\"r-631d5954\",\"method\":\"chi_square_goodness_of_fit\",\"inputs\":{\"experiment_id\":\"hillstrom\"},\"experiment_id\":\"hillstrom\",\"arms\":[{\"arm\":\"no_email\",\"expected_share\":0.3333333333333333,\"observed_share\":0.332906,\"observed\":21306,\"expected\":21333.3},{\"arm\":\"mens_email\",\"expected_share\":0.3333333333333333,\"observed_share\":0.332922,\"observed\":21307,\"expected\":21333.3},{\"arm\":\"womens_email\",\"expected_share\":0.3333333333333333,\"observed_share\":0.334172,\"observed\":21387,\"expected\":21333.3}],\"chi2\":0.202531,\"df\":2,\"p_value\":0.903693,\"alpha\":0.001,\"passed\":true,\"summary\":\"Observed split no_email 33.29% / mens_email 33.29% / womens_email 33.42%; chi2 = 0.2025, p = 0.9; SRM check passed.\"}",
+    "[r3] analyze_metric result_id=r-d42f178c\n{\"result_id\":\"r-d42f178c\",\"method\":\"cuped_welch\",\"inputs\":{\"experiment_id\":\"hillstrom\",\"metric\":\"spend\",\"method\":\"auto\",\"cuped_covariate\":\"history\",\"arms\":[\"mens_email\",\"womens_email\"]},\"experiment_id\":\"hillstrom\",\"metric\":\"spend\",\"metric_type\":\"continuous\",\"role\":\"primary\",\"alpha\":0.05,\"cuped_covariate\":\"history\",\"comparisons\":[{\"result_id\":\"r-d42f178c.mens_email\",\"arm\":\"mens_email\",\"control\":\"no_email\",\"n_control\":21306,\"n_treatment\":21307,\"mean_control\":0.653978,\"mean_treatment\":1.42143,\"abs_effect\":0.76745,\"abs_ci\":{\"low\":0.482824,\"high\":1.05208},\"rel_effect\":1.17351,\"rel_ci\":{\"low\":0.639653,\"high\":1.96822},\"p_value\":1.26479e-07,\"significant\":true,\"direction\":\"better\",\"variance_reduction\":0.000433956,\"guardrail\":null,\"summary\":\"mens_email vs no_email: +117% (95% CI +64% to +197%), p < 0.0001; absolute +0.7674 (0.654 -> 1.421); better; CUPED variance reduction 0.0434%\"},{\"result_id\":\"r-d42f178c.womens_email\",\"arm\":\"womens_email\",\"control\":\"no_email\",\"n_control\":21306,\"n_treatment\":21387,\"mean_control\":0.653644,\"mean_treatment\":1.07635,\"abs_effect\":0.422705,\"abs_ci\":{\"low\":0.167298,\"high\":0.678113},\"rel_effect\":0.64669,\"rel_ci\":{\"low\":0.221727,\"high\":1.26948},\"p_value\":0.00118006,\"significant\":true,\"direction\":\"better\",\"variance_reduction\":0.00037807,\"guardrail\":null,\"summary\":\"womens_email vs no_email: +64.7% (95% CI +22.2% to +127%), p = 0.0012; absolute +0.4227 (0.6536 -> 1.076); better; CUPED variance reduction 0.0378%\"}],\"notes\":[\"Several treatment arms: adjust p-values with adjust_pvalues (the plan specifies holm).\"]}",
+    "[r4] adjust_pvalues result_id=r-bbcefd03\n{\"result_id\":\"r-bbcefd03\",\"method\":\"holm\",\"inputs\":{\"result_ids\":[\"r-d42f178c.mens_email\",\"r-d42f178c.womens_email\"],\"method\":\"holm\"},\"alpha\":0.05,\"entries\":[{\"result_id\":\"r-d42f178c.mens_email\",\"label\":\"hillstrom spend: mens_email vs no_email\",\"p_value\":1.26479e-07,\"p_adjusted\":2.52957e-07,\"significant_adjusted\":true},{\"result_id\":\"r-d42f178c.womens_email\",\"label\":\"hillstrom spend: womens_email vs no_email\",\"p_value\":0.00118006,\"p_adjusted\":0.00118006,\"significant_adjusted\":true}],\"summary\":\"Holm over 2 comparisons: 2 significant at alpha 0.05. hillstrom spend: mens_email vs no_email: p < 0.0001 adjusted; hillstrom spend: womens_email vs no_email: p = 0.0012 adjusted\"}"
+  ]
+}

@@ -47,7 +47,7 @@ def fmt_pct(x: float, digits: int = 3, signed: bool = True) -> str:
         return "n/a"
     if math.isinf(x):
         return "unbounded"
-    s = f"{x * 100:.{digits}g}%"
+    s = f"{x * 100:,.0f}%" if abs(x * 100) >= 10**digits else f"{x * 100:.{digits}g}%"
     return ("+" + s) if signed and x > 0 else s
 
 
