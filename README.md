@@ -1,5 +1,7 @@
 # Experimentation Copilot
 
+[![CI](https://github.com/giteshpoudel/experiment-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/giteshpoudel/experiment-copilot/actions/workflows/ci.yml)
+
 **An MCP server that lets an AI assistant analyze A/B tests with validated statistics, and an
 eval harness that measures whether it actually reaches the right ship decision.**
 
@@ -77,6 +79,7 @@ Tool trace:
 | `sequential_test` | Valid results after peeking: O'Brien-Fleming alpha spending, mSPRT |
 | `daily_effects` | Effect by day plus a decay test, for novelty effects |
 | `segment_effects` | Effects by segment, adjusted and flagged as exploratory |
+| `uplift_model` | Who responds: T- or X-learner uplift model, Qini and uplift by decile on held-out units |
 | `bayesian_ab` | P(treatment better), credible intervals, expected loss |
 | `power_analysis` | Sample size for an MDE, or the MDE for a sample size |
 | `calculate` | Exact arithmetic with its own citable id, so prose never does math |
@@ -161,6 +164,33 @@ through arithmetic, and still gets a quarter of the decisions wrong. Most of its
 cautious "don't ship" calls on revenue tests, where it can't apply the CUPED adjustment the plan
 pre-registered.
 
+## On real data: the Hillstrom e-mail test
+
+Kevin Hillstrom's public [e-mail experiment](https://blog.minethatdata.com/2008/03/minethatdata-e-mail-analytics-and-data.html)
+randomized 64,000 customers to a men's e-mail, a women's e-mail or no e-mail
+([full report](reports/hillstrom.md)).
+
+- **Decision:** the agent ships the men's e-mail. Spend rose +117% (95% CI +64% to +197%) vs
+  +64.7% for the women's e-mail, both significant after Holm. It made 4 tool calls and cost
+  $0.0118. The no-tools baseline couldn't build a confidence interval from means alone, so it
+  couldn't apply the plan.
+- **CUPED barely helps here.** Prior-year spend reduces the variance of two-week spend by
+  0.04%; the best covariate case (recency on visits) narrows the CI by 0.3%. Sparse
+  outcomes and a weak covariate leave nothing to remove.
+- **The women's e-mail works on new customers.** New customers' spend rose +197% vs +12.2%
+  (not significant) for returning ones (Cochran's Q p = 0.018), and only the women's e-mail is
+  worth targeting: Qini 0.039 vs about 0 for the men's.
+
+The Criteo uplift case study (planned 85/15 split, T- vs X-learner) is wired up and tested,
+and runs once the dataset is downloaded.
+
+## Try the demo
+
+`streamlit run app/streamlit_app.py` replays saved runs: pick an experiment (SRM, novelty,
+four arms, ratio metric, Hillstrom), read the cited readout beside every tool call, and
+compare it with the no-tools baseline. It needs no API key; with `LLM_API_KEY` set and a local
+store, a live mode runs the agent.
+
 ## What the evals and tests caught
 
 Some of the most useful output of this project was finding mistakes, including my own:
@@ -201,9 +231,9 @@ The full log is in [`NOTES.md`](NOTES.md).
 | Language | Python 3.11, type hints throughout, Pydantic v2 for every tool input and output |
 | MCP server | [FastMCP](https://github.com/PrefectHQ/fastmcp) 4 (stdio), tested with its in-memory client |
 | Storage | DuckDB registry over per-experiment Parquet; ground truth in a separate database the server never opens |
-| Statistics | NumPy, SciPy, statsmodels; group-sequential boundaries by numerical integration |
+| Statistics | NumPy, SciPy, statsmodels; group-sequential boundaries by numerical integration; scikit-learn for uplift models |
 | LLM | DeepSeek V4-Pro (agent) and V4.1-Flash (judge) through the OpenAI SDK, behind a small provider-neutral interface |
-| CLI and tests | Typer, pytest (offline tests use a scripted fake LLM), ruff |
+| CLI, demo and CI | Typer, Streamlit, GitHub Actions; pytest (offline tests use a scripted fake LLM) and ruff |
 
 ## Layout
 
@@ -216,6 +246,9 @@ src/expcopilot/
   baseline.py     the same model with only a summary table
   simulate.py     experiments with known truth
   evals/          suite, oracle, scoring, judge, runner
+  datasets/       Hillstrom and Criteo loaders (checksummed, never committed)
+app/                    Streamlit demo
+reports/                case-study write-ups
 evals/scenarios.jsonl   labelled scenarios (never edited after creation)
 results/                validation numbers, example readouts
 ```
@@ -235,9 +268,15 @@ expc describe smoke-15          # the pre-registered plan
 expc validate                   # statistics validation -> results/validation.json
 expc readout smoke-15           # agent readout with tool trace
 expc readout smoke-15 --no-tools  # baseline
-expc eval --split dev           # evals (costs a few dollars; see the cost line)
+expc load hillstrom             # real-data case study (downloads 4 MB)
+streamlit run app/streamlit_app.py  # demo
 pytest -m "not slow"            # offline tests, no API calls
 ```
+
+**Reproduce the eval table:** `expc simulate --suite eval` regenerates the 80 experiments (the
+labels in `evals/scenarios.jsonl` follow from the seeds; a slow test checks this), then
+`expc eval --split test --runs 3 --configs agent,baseline,agent-flash` runs the evaluation.
+That costs about $4 at DeepSeek's off-peak prices.
 
 **From Claude Code:** the repo ships a project [`.mcp.json`](.mcp.json). Run `claude` here, approve
 the server, and ask *"Should we ship smoke-15?"*
@@ -258,8 +297,9 @@ the server, and ask *"Should we ship smoke-15?"*
 
 ## Limitations
 
-- **Simulated data so far.** Case studies on the public Hillstrom email test and the Criteo
-  uplift dataset are next.
+- **One real dataset so far.** Hillstrom is done; the Criteo uplift study waits on the dataset
+  (Criteo's own download link was down in October 2026). Plans for real data are
+  retrospective, written before the analysis ran.
 - **No interference.** Units are assumed independent: no network or marketplace effects and
   no long-term holdouts.
 - **The judge comes from the same lab as the agent.** It only scores explanation quality;

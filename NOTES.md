@@ -311,3 +311,61 @@ Running log for the README's "what the evals caught" section. Newest last.
   baseline never sees tool output): agent 100% / 100% (decision accuracy / required checks),
   99% grounded, $0.0062 and 26 s per readout; Flash 100% / 100%, 97%, $0.0015. No regression.
   Rerun cost: $1.81.
+
+## Phase 6: real-data case studies (2026-10-22)
+
+### Decisions
+
+- **Hillstrom plan (retrospective, written before the analysis):** primary spend with CUPED on
+  `history`; secondaries visit and conversion; Holm across the two e-mail arms; no guardrails.
+  The raw CSV (3.96 MB, minethatdata.com) is pinned by SHA-256 and never committed.
+- **Criteo:** a seeded DuckDB reservoir sample of 1M users; planned shares 85/15, so the SRM
+  check must pass. Criteo's own link returned 404, so the user downloads the file by hand. The
+  loader warns when the file's SHA-256 differs from the value published by libuplift, and the
+  data is CC BY-NC-SA.
+- **Uplift engine** (`stats/uplift.py`): T- and X-learners on HistGradientBoosting; Qini curve
+  and coefficient match scikit-uplift to 1e-10 (a test-only dependency); evaluation on a
+  held-out 30%. Exposed as the exploratory `uplift_model` tool (12 tools now).
+
+### Findings on Hillstrom
+
+- The agent ships the men's e-mail: spend +117% (95% CI +64% to +197%), Holm p < 0.0001; the
+  women's e-mail +64.7%, p = 0.0012. $0.0118, 4 tool calls. The baseline said DON'T SHIP because
+  it could not build a CI from means alone.
+- **CUPED reduces variance by under 1% here** (spend: 0.04% with `history`; best case visit with
+  `recency`: 0.66%, a CI 0.997× as wide). Two-week spend is sparse and barely predicted by
+  past-year spend. This is the honest value for the kit's "[R]%" row.
+- The women's e-mail lifts spend mainly for new customers (+197% vs +12.2%, Cochran's Q
+  p = 0.018). Only it is worth targeting: visit Qini 0.039 (T) / 0.041 (X) vs about 0 for the
+  men's e-mail.
+
+### Bugs and test changes
+
+- **Large percentages printed in scientific notation** (`+1.14e+03%`) on real data. `fmt_pct`
+  now prints values of 1,000% and above as whole numbers.
+- **Uplift test expectation (my error, not a tolerance relaxed to pass):** I first required Qini
+  > 0.1 on the synthetic data, but Qini is normalized by a "perfect" ranking built from realized
+  outcomes, so even the true-effect score only reaches 0.121 there. The test now requires the
+  learners to reach 40% of that ceiling (they reach about 55–60%), and the random-score check
+  was tightened from |Qini| < 0.1 to < 0.03.
+- DuckDB deprecated `fetch_arrow_table()`; switched to `to_arrow_table()`.
+
+### Open
+
+- The Criteo case study runs when `data/raw/criteo-research-uplift-v2.1.csv.gz` is present:
+  `expc load criteo`, then `python scripts/case_study.py criteo`, plus a readout.
+
+## Phase 7: demo, CI, polish (2026-10-22)
+
+- **Streamlit demo** (`app/streamlit_app.py`): replay mode over saved runs needs no key or
+  data, so it can be hosted free (`app/requirements.txt` lists only Streamlit). It shows the
+  cited readout beside each tool call and the no-tools baseline, plus the eval table and the
+  validation checks. Live mode appears only with `LLM_API_KEY` and a local store. AppTest
+  renders every saved run.
+- **CI:** lint and fast tests on every push and PR; slow validation weekly or on demand; a paid
+  smoke eval only by hand, which needs the `LLM_API_KEY` repository secret (the user adds it).
+- **Fresh-clone check:** a clean clone with a new venv passes lint and 157 tests (2 skipped:
+  the raw-file check and the live API test). The data regenerates, the eval labels come out
+  identical to the committed file, and the MCP server serves 12 tools over stdio.
+- **Found while testing the demo:** Streamlit's AppTest applies a selectbox `format_func`
+  twice when selecting by index, so the selector now shows plain ids with a caption.
