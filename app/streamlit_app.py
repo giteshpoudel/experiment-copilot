@@ -31,6 +31,16 @@ DECISION_STYLE = {
     "invalid": ("INVALID", "red"),
     None: ("NO DECISION", "gray"),
 }
+# Curated order: the strongest first impression first. Runs not listed here come last.
+RUN_LABELS = {
+    "hillstrom": "Hillstrom e-mail test (real data)",
+    "criteo": "Criteo ad targeting (real data)",
+    "smoke-15": "Traffic split went wrong (simulated)",
+    "smoke-16": "Novelty effect that fades (simulated)",
+    "smoke-19": "Four-arm pricing test (simulated)",
+    "smoke-10": "Revenue per session, a ratio metric (simulated)",
+    "smoke-03": "One-page checkout (simulated)",
+}
 SCENARIO_NOTES = {
     "smoke-15": "Traffic split drifted from 50/50: the sample-ratio check must stop the analysis.",
     "smoke-16": "A redesign with a novelty spike that fades over two weeks; daily data available.",
@@ -94,7 +104,9 @@ def replay_page() -> None:
     if not agents:
         st.warning("No saved runs in results/readouts/.")
         return
-    eid = st.selectbox("Saved run", list(agents))
+    ordered = [e for e in RUN_LABELS if e in agents] + sorted(set(agents) - set(RUN_LABELS))
+    labels = {RUN_LABELS.get(e, e): e for e in ordered}
+    eid = labels[st.selectbox("Saved run", list(labels))]
     if eid in SCENARIO_NOTES:
         st.caption(SCENARIO_NOTES[eid])
     run = agents[eid]

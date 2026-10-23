@@ -35,3 +35,16 @@ def test_evals_page_renders(monkeypatch: pytest.MonkeyPatch) -> None:
     at.radio[0].set_value("Evals and validation").run()
     assert not at.exception
     assert any("held-out test" in h.value for h in at.subheader)
+
+
+def test_runs_open_on_hillstrom_in_curated_order(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    options = list(at.selectbox[0].options)
+    assert options[0] == "Hillstrom e-mail test (real data)"
+    assert options[:3] == [
+        "Hillstrom e-mail test (real data)",
+        "Criteo ad targeting (real data)",
+        "Traffic split went wrong (simulated)",
+    ]
+    assert at.selectbox[0].value == options[0]
